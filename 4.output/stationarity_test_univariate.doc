@@ -1,0 +1,23 @@
+
+<table style="text-align:center"><tr><td colspan="12" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">variable</td><td>regime</td><td>num</td><td>nIncrease</td><td>p</td><td>T1.sig</td><td>sigInc.frac</td><td>sigInc.pval</td><td>T2.Inc.sig</td><td>sigDec.frac</td><td>sigDec.pval</td><td>T2.Dec.sig</td></tr>
+<tr><td colspan="12" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">SWE.max</td><td>Rainfall</td><td>16</td><td>62%</td><td>0.45</td><td></td><td>6%</td><td>0.56</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">SWE.max</td><td>Hybrid</td><td>71</td><td>37%</td><td>0.03</td><td></td><td>3%</td><td>0.88</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">SWE.max</td><td>Snowmelt</td><td>40</td><td>25%</td><td>0.002</td><td>*</td><td>0%</td><td>1</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">SWE.max</td><td>Glacial</td><td>23</td><td>35%</td><td>0.21</td><td></td><td>0%</td><td>1</td><td></td><td>4%</td><td>0.69</td><td></td></tr>
+<tr><td style="text-align:left">BF.winter</td><td>Rainfall</td><td>16</td><td>56%</td><td>0.80</td><td></td><td>0%</td><td>1</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">BF.winter</td><td>Hybrid</td><td>71</td><td>35%</td><td>0.02</td><td></td><td>1%</td><td>0.97</td><td></td><td>3%</td><td>0.88</td><td></td></tr>
+<tr><td style="text-align:left">BF.winter</td><td>Snowmelt</td><td>40</td><td>30%</td><td>0.02</td><td></td><td>2%</td><td>0.87</td><td></td><td>5%</td><td>0.60</td><td></td></tr>
+<tr><td style="text-align:left">BF.winter</td><td>Glacial</td><td>23</td><td>74%</td><td>0.03</td><td></td><td>4%</td><td>0.69</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">P.summer</td><td>Rainfall</td><td>16</td><td>88%</td><td>0.004</td><td></td><td>6%</td><td>0.56</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">P.summer</td><td>Hybrid</td><td>71</td><td>31%</td><td>0.002</td><td>*</td><td>3%</td><td>0.88</td><td></td><td>3%</td><td>0.88</td><td></td></tr>
+<tr><td style="text-align:left">P.summer</td><td>Snowmelt</td><td>40</td><td>42%</td><td>0.43</td><td></td><td>0%</td><td>1</td><td></td><td>5%</td><td>0.60</td><td></td></tr>
+<tr><td style="text-align:left">P.summer</td><td>Glacial</td><td>23</td><td>74%</td><td>0.03</td><td></td><td>4%</td><td>0.69</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">T.summer</td><td>Rainfall</td><td>16</td><td>38%</td><td>0.45</td><td></td><td>0%</td><td>1</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">T.summer</td><td>Hybrid</td><td>71</td><td>79%</td><td>0.0000</td><td>* * *</td><td>23%</td><td>0.0000</td><td>* * *</td><td>3%</td><td>0.88</td><td></td></tr>
+<tr><td style="text-align:left">T.summer</td><td>Snowmelt</td><td>40</td><td>92%</td><td>0.0000</td><td>* * *</td><td>2%</td><td>0.87</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">T.summer</td><td>Glacial</td><td>23</td><td>61%</td><td>0.40</td><td></td><td>0%</td><td>1</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">T.7</td><td>Rainfall</td><td>16</td><td>69%</td><td>0.21</td><td></td><td>0%</td><td>1</td><td></td><td>0%</td><td>1</td><td></td></tr>
+<tr><td style="text-align:left">T.7</td><td>Hybrid</td><td>71</td><td>62%</td><td>0.06</td><td></td><td>6%</td><td>0.48</td><td></td><td>1%</td><td>0.97</td><td></td></tr>
+<tr><td style="text-align:left">T.7</td><td>Snowmelt</td><td>40</td><td>35%</td><td>0.08</td><td></td><td>0%</td><td>1</td><td></td><td>2%</td><td>0.87</td><td></td></tr>
+<tr><td style="text-align:left">T.7</td><td>Glacial</td><td>23</td><td>48%</td><td>1</td><td></td><td>0%</td><td>1</td><td></td><td>9%</td><td>0.32</td><td></td></tr>
+<tr><td colspan="12" style="border-bottom: 1px solid black"></td></tr></table>

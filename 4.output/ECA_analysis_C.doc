@@ -1,0 +1,15 @@
+
+<table style="text-align:center"><tr><td colspan="9" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td>regime</td><td>name</td><td>H1.p.pos</td><td>H1.p.neg</td><td>H2.p</td><td>H3.b</td><td>H3.p</td><td>n</td></tr>
+<tr><td colspan="9" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">1</td><td>Rainfall</td><td>ECA (60 year)</td><td>1</td><td>0.17</td><td>1</td><td>0.14</td><td>0.78</td><td>15</td></tr>
+<tr><td style="text-align:left">2</td><td>Rainfall</td><td>ECA (20 year)</td><td>0.17</td><td>1</td><td>1</td><td>0.07</td><td>0.88</td><td>15</td></tr>
+<tr><td style="text-align:left">3</td><td>Rainfall</td><td>ECA (10 year)</td><td>0.54</td><td>1</td><td>0.61</td><td>0.02</td><td>0.97</td><td>15</td></tr>
+<tr><td style="text-align:left">4</td><td>Rainfall</td><td>ECA (5 year)</td><td>0.17</td><td>0.54</td><td>0.61</td><td>0.14</td><td>0.79</td><td>15</td></tr>
+<tr><td style="text-align:left">5</td><td>Hybrid</td><td>ECA (60 year)</td><td>0.40</td><td>0.63</td><td>0.71</td><td>0.56</td><td>0.003</td><td>64</td></tr>
+<tr><td style="text-align:left">6</td><td>Hybrid</td><td>ECA (20 year)</td><td>0.10</td><td>0.63</td><td>0.26</td><td>0.60</td><td>0.002</td><td>64</td></tr>
+<tr><td style="text-align:left">7</td><td>Hybrid</td><td>ECA (10 year)</td><td>0.10</td><td>0.84</td><td>0.38</td><td>0.67</td><td>0.001</td><td>64</td></tr>
+<tr><td style="text-align:left">8</td><td>Hybrid</td><td>ECA (5 year)</td><td>0.10</td><td>0.96</td><td>0.71</td><td>0.65</td><td>0.001</td><td>64</td></tr>
+<tr><td style="text-align:left">9</td><td>Snowmelt</td><td>ECA (60 year)</td><td>1</td><td>0.11</td><td>0.21</td><td>-0.10</td><td>0.82</td><td>23</td></tr>
+<tr><td style="text-align:left">10</td><td>Snowmelt</td><td>ECA (20 year)</td><td>1</td><td>0.03</td><td>0.03</td><td>0.05</td><td>0.91</td><td>23</td></tr>
+<tr><td style="text-align:left">11</td><td>Snowmelt</td><td>ECA (10 year)</td><td>0.69</td><td>0.001</td><td>0.01</td><td>0.19</td><td>0.68</td><td>23</td></tr>
+<tr><td style="text-align:left">12</td><td>Snowmelt</td><td>ECA (5 year)</td><td>0.69</td><td>0.0001</td><td>0.01</td><td>0.18</td><td>0.70</td><td>23</td></tr>
+<tr><td colspan="9" style="border-bottom: 1px solid black"></td></tr></table>

@@ -1,0 +1,9 @@
+
+<table style="text-align:center"><tr><td colspan="6" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td>variable</td><td>Rainfall</td><td>Hybrid</td><td>Snowfall</td><td>Glacial</td></tr>
+<tr><td colspan="6" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">1</td><td>N</td><td>34</td><td>111</td><td>48</td><td>37</td></tr>
+<tr><td style="text-align:left">2</td><td>KGE.sqrt</td><td>0.67 (0.28, 0.87)</td><td>0.71 (0.19, 0.91)</td><td>0.64 (0.14, 0.85)</td><td>0.57 (0.26, 0.77)</td></tr>
+<tr><td style="text-align:left">3</td><td>NSE.log</td><td>0.47 (-0.09, 0.68)</td><td>0.52 (-0.29, 0.82)</td><td>0.45 (-0.1, 0.76)</td><td>0.35 (-0.07, 0.63)</td></tr>
+<tr><td style="text-align:left">4</td><td>R2</td><td>0.52 (0.16, 0.78)</td><td>0.57 (0.06, 0.86)</td><td>0.48 (0.07, 0.78)</td><td>0.41 (0.13, 0.71)</td></tr>
+<tr><td style="text-align:left">5</td><td>RMSE</td><td>0.52 (0.16, 0.78)</td><td>0.57 (0.06, 0.86)</td><td>0.48 (0.07, 0.78)</td><td>0.41 (0.13, 0.71)</td></tr>
+<tr><td style="text-align:left">6</td><td>pbias</td><td>-3.21 (-24.58, 3.78)</td><td>-0.59 (-18.16, 6.38)</td><td>-0.66 (-4.83, 2.32)</td><td>-0.52 (-5.17, 6.51)</td></tr>
+<tr><td colspan="6" style="border-bottom: 1px solid black"></td></tr></table>

@@ -1,0 +1,14 @@
+------------------
+Order Details
+-----------------
+Order ID: 2344205
+Date: 20240202
+
+----------------------
+Feature Types
+-----------------------
+ - Ground Water Wells in directory GW_WW_WRBC
+
+----------------------------
+Packaged Products
+----------------------------

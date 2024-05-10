@@ -1,0 +1,9 @@
+
+<table style="text-align:center"><tr><td colspan="8" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td>regime</td><td>name</td><td>H1.p</td><td>H2.p</td><td>H3.b</td><td>H3.p</td><td>n</td></tr>
+<tr><td colspan="8" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">1</td><td>Rainfall</td><td>b_I_9</td><td>0.302</td><td>1</td><td>-8.844</td><td>0.494</td><td>7</td></tr>
+<tr><td style="text-align:left">2</td><td>Rainfall</td><td>b_III_24</td><td>1</td><td>1</td><td>0.549</td><td>0.953</td><td>7</td></tr>
+<tr><td style="text-align:left">3</td><td>Hybrid</td><td>b_I_9</td><td>0.0001</td><td>0.556</td><td>3.464</td><td>0.366</td><td>72</td></tr>
+<tr><td style="text-align:left">4</td><td>Hybrid</td><td>b_III_24</td><td>0.002</td><td>0.545</td><td>3.809</td><td>0.103</td><td>72</td></tr>
+<tr><td style="text-align:left">5</td><td>Snowmelt</td><td>b_I_9</td><td>0.0001</td><td>0.011</td><td>6.249</td><td>0.531</td><td>23</td></tr>
+<tr><td style="text-align:left">6</td><td>Snowmelt</td><td>b_III_24</td><td>0.075</td><td>0.115</td><td>-7.026</td><td>0.138</td><td>23</td></tr>
+<tr><td colspan="8" style="border-bottom: 1px solid black"></td></tr></table>

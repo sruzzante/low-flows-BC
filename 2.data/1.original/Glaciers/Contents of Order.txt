@@ -1,0 +1,15 @@
+
+------------------
+Order Details
+-----------------
+Order ID: 2304964
+Date: 20230808
+
+----------------------
+Feature Types
+-----------------------
+ - Freshwater Atlas Glaciers in directory FWGLCRSPL
+
+----------------------------
+Packaged Products
+----------------------------

@@ -1,0 +1,457 @@
+﻿<!DOCTYPE html>
+<html>
+   <head>
+      <title>Metadata</title>
+      <meta charset="UTF-8">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" rel="stylesheet">
+   </head>
+   <body>
+      <div class="container">
+         <div class="row">
+            <div class="col-md-12" style="padding:10px;border: 1px solid black" >
+                     <img class="img-fluid d-block mx-auto" src="https://catalogue.data.gov.bc.ca/img/bc_mark.699f8f93.png" alt="B.C. Government Logo" style="height:65px;background-color:#003366">
+                     <H2 style="color:rgb(2,47,248)" class="text-center">Groundwater Wells</H2>
+                     <table class="table table-condensed">
+                        <thead>
+                           <tr>
+                              <th>Title</th>
+                              <th>Purpose</th>
+                              <th>Description</th>
+                              <th>Last Modified Date</th>
+                              <th>BCDC URL</th>
+                              <th>BCDC Type</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                              <td>Groundwater Wells</td>
+                              <td>Spatial view intended to show location and other attributes of wells which have been drilled, dug or driven in the province, to assist in the management and protection of the groundwater resource.</td>
+                              <td>Point features showing the location of groundwater wells in BC joined with attributes and information from the Groundwater Wells and Aquifers (GWELLS) application. NOTE: Artesian wells are flowing wells at the time of drilling.  
+                 </td>
+                              <td>2024-02-02T04:37:45</td>
+                              <td><a href="https://catalogue.data.gov.bc.ca/dataset/e4731a85-ffca-4112-8caf-cb0a96905778">https://catalogue.data.gov.bc.ca/dataset/e4731a85-ffca-4112-8caf-cb0a96905778</a></td>
+                              <td>Geographic</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                     <table class="table table-condensed">
+                        <thead>
+                           <tr>
+                              <th>Resource Location</th>
+                              <th>Object Name</th>
+                              <th>Short Name</th>
+                              <th>Object Comments</th>
+                              <th>Projection</th>
+                              <th>License Title</th>
+                              <th>License URL</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                              <td>Bc Geographic Warehouse</td>
+                              <td>WHSE_WATER_MANAGEMENT. GW_WATER_WELLS_WRBC_SVW</td>
+                              <td>GW_WW_WRBC</td>
+                              <td>The locations of groundwater wells in BC.</td>
+                              <td>epsg3005</td>
+                              <td>Open Government Licence - British Columbia</td>
+                              <td><a href="https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61">License Url</a></td>
+                           </tr>
+                        </tbody>
+                     </table>
+               <hr style="border-width:4px ">
+            </div>
+         </div>
+         <div class="row">
+            <div class="col-md-12" style="padding:10px;border: 1px solid black" >
+                     <H5 style="color:rgb(2,47,248)" class="text-left">Column Details</H5>
+                     <table class="table table-striped">
+                        <thead>
+                           <tr>
+                              <th>Column Name</th>
+                              <th>Short Name</th>
+                              <th>Data Type</th>
+                              <th>Data Precision</th>
+                              <th>Column Comments</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr>
+                              <td>GW_WW_SYSID</td>
+                              <td>SYSID</td>
+                              <td>NUMBER</td>
+                              <td>10</td>
+                              <td>A system generated unique identification number</td>
+                           </tr>
+                           <tr>
+                              <td>WELL_TAG_NUMBER</td>
+                              <td>WELL_TAG</td>
+                              <td>NUMBER</td>
+                              <td>10</td>
+                              <td>The file number assigned to a particular well in the in the provincial Groundwater Wells and Aquifers application, e.g., 56809.</td>
+                           </tr>
+                           <tr>
+                              <td>IDENTIFICATION_PLATE_NUMBER</td>
+                              <td>ID_PLATE</td>
+                              <td>NUMBER</td>
+                              <td>10</td>
+                              <td>Steel plate with a unique number that is attached to required wells under the groundwater protection regulations such as water supply wells, recharge or injection wells made by drilling or boring, and permanent dewatering wells, e.g., 691.</td>
+                           </tr>
+                           <tr>
+                              <td>STREET_ADDRESS</td>
+                              <td>ADDRESS</td>
+                              <td>VARCHAR2</td>
+                              <td>200</td>
+                              <td>Street address of the property that the well is physically located on.</td>
+                           </tr>
+                           <tr>
+                              <td>CITY</td>
+                              <td>CITY</td>
+                              <td>VARCHAR2</td>
+                              <td>50</td>
+                              <td>The city, town, or general locality where the well is located, e.g. Oliver, Gabriola Island.</td>
+                           </tr>
+                           <tr>
+                              <td>LEGAL_LOT</td>
+                              <td>LEGAL_LOT</td>
+                              <td>VARCHAR2</td>
+                              <td>10</td>
+                              <td>The smallest designation of land (the lot number) from the legal description of the land parcel where the well is located, e.g., B, 2.</td>
+                           </tr>
+                           <tr>
+                              <td>LEGAL_PLAN</td>
+                              <td>LEGAL_PLAN</td>
+                              <td>VARCHAR2</td>
+                              <td>20</td>
+                              <td>The plan number from the legal description of the land parcel where the well is located, e.g., 1261, 13604, LMP7728.</td>
+                           </tr>
+                           <tr>
+                              <td>LEGAL_DISTRICT_LOT</td>
+                              <td>LGL_DSTRCT</td>
+                              <td>VARCHAR2</td>
+                              <td>20</td>
+                              <td>The district lot number from the legal description of the land parcel where the well is located, e.g., 456,  1234s.</td>
+                           </tr>
+                           <tr>
+                              <td>LEGAL_PID</td>
+                              <td>LEGAL_PID</td>
+                              <td>NUMBER</td>
+                              <td>10</td>
+                              <td>The parcel identifier (PID) of the land parcel where the well is located, e.g., 014905736.</td>
+                           </tr>
+                           <tr>
+                              <td>WELL_LOCATION_DESCRIPTION</td>
+                              <td>LOCN_DESCR</td>
+                              <td>VARCHAR2</td>
+                              <td>500</td>
+                              <td>An informal description of where the well is located on a property, e.g., 50m to the right of the house and behind the shed.</td>
+                           </tr>
+                           <tr>
+                              <td>COORDINATE_ACQUISITION_CODE</td>
+                              <td>COORDAQ</td>
+                              <td>VARCHAR2</td>
+                              <td>1</td>
+                              <td>The approximate accuracy of the geographic coordinates provided, e.g., H (default accuracy; (10 m accuracy) handheld GPS with accuracy of +/- 10 meters), A (10 m accuracy - cadastre and good location sketch), C (50 m accuracy - Digitized from 1:20,000 mapping), I (20 m accuracy - no cadastre but good location sketch or good written description), G (unknown, accuracy based on parcel size - No cadastre, poor or no location sketch; site located in center of primary parcel), J (unknown, accuracy based on parcel size - cadastre, poor or no location sketch, arbitrarily located in center of parcel).</td>
+                           </tr>
+                           <tr>
+                              <td>WELL_STATUS</td>
+                              <td>WELLSTATUS</td>
+                              <td>VARCHAR2</td>
+                              <td>300</td>
+                              <td>Description of the status of a well as defined in the Groundwater Protection Regulation of the Water Act, i.e. New, Abandoned, Alteration, Closure, Other.</td>
+                           </tr>
+                           <tr>
+                              <td>WELL_CLASS</td>
+                              <td>WELL_CLASS</td>
+                              <td>VARCHAR2</td>
+                              <td>100</td>
+                              <td>Valid classification as defined in the Groundwater Protection Regulation of the Water Sustainability Act, i.e., Water Supply, Monitoring, Recharge, Injection, Dewatering, Drainage, Remediation, Geotechnical, Closed-loop geoexchange.</td>
+                           </tr>
+                           <tr>
+                              <td>WELL_SUBCLASS</td>
+                              <td>WLL_SBCLSS</td>
+                              <td>VARCHAR2</td>
+                              <td>20</td>
+                              <td>Valid subclassification as defined in the Groundwater Protection Regulation of the Water Sustainability Act, e.g.,  Temporary, Permanent, Borehole, Artesian.</td>
+                           </tr>
+                           <tr>
+                              <td>INTENDED_WATER_USE</td>
+                              <td>INTEND_USE</td>
+                              <td>VARCHAR2</td>
+                              <td>100</td>
+                              <td>The intended use of the water in a water supply well as reported by the driller at time of work completion on the well, e.g., private domestic, irrigation, water supply system, industrial commercial, unknown.</td>
+                           </tr>
+                           <tr>
+                              <td>WELL_DETAILS_URL</td>
+                              <td>WELL_URL</td>
+                              <td>VARCHAR2</td>
+                              <td>255</td>
+                              <td>Link to the well summary report within the Groundwater Wells and Aquifer (GWELLS) application, which provides the overall description and history of the well.</td>
+                           </tr>
+                           <tr>
+                              <td>LICENCE_STATUS</td>
+                              <td>LIC_STATUS</td>
+                              <td>VARCHAR2</td>
+                              <td>300</td>
+                              <td>Description of valid licencing option granted to a well under the Water Water Sustainability Act. This information comes from eLicensing, i.e. Unlicensed, Licensed, Historical</td>
+                           </tr>
+                           <tr>
+                              <td>AQUIFER_ID</td>
+                              <td>AQUIFER_ID</td>
+                              <td>NUMBER</td>
+                              <td>10</td>
+                              <td>System generated unique sequential number assigned to each mapped aquifer. The aquifer ID identifies which aquifer a well is in.  An aquifer can have multiple wells, while a single well can only be in one aquifer.</td>
+                           </tr>
+                           <tr>
+                              <td>PERSON_RESPONSIBLE</td>
+                              <td>PERSON</td>
+                              <td>VARCHAR2</td>
+                              <td>300</td>
+                              <td>Name (and registration ID) of the registered driller or pump installer responsible for constructing, altering, or decommissioning the well, e.g., Jane Doe (WD 06666666).</td>
+                           </tr>
+                           <tr>
+                              <td>COMPANY_OF_PERSON_RESPONSIBLE</td>
+                              <td>COMPANY</td>
+                              <td>VARCHAR2</td>
+                              <td>300</td>
+                              <td>Name (and location) of the registered driller or pump installer company responsible for constructing, altering, or decommissioning the well, e.g., Geotech Drilling Services Ltd. (Vernon, BC).</td>
+                           </tr>
+                           <tr>
+                              <td>FINISHED_WELL_DEPTH</td>
+                              <td>FNSH_DEPTH</td>
+                              <td>NUMBER</td>
+                              <td>8</td>
+                              <td>The depth at which the well was finished, measured in units of feet bgl (below ground level), e.g. 157.0. It can be shallower than the total well depth which is the total depth at which the well was drilled.</td>
+                           </tr>
+                           <tr>
+                              <td>TOTAL_DEPTH_DRILLED</td>
+                              <td>TTL_DEPTH</td>
+                              <td>NUMBER</td>
+                              <td>7</td>
+                              <td>The deepest depth a well was drilled to, reported as feet below ground level, e.g., 150.</td>
+                           </tr>
+                           <tr>
+                              <td>BEDROCK_DEPTH</td>
+                              <td>BED_DEPTH</td>
+                              <td>NUMBER</td>
+                              <td>8</td>
+                              <td>Depth below ground level at which bedrock starts, measured in feet, e.g. 132.0.</td>
+                           </tr>
+                           <tr>
+                              <td>YIELD</td>
+                              <td>YIELD</td>
+                              <td>NUMBER</td>
+                              <td>8</td>
+                              <td>An approximate estimate of the capacity of the well to produce groundwater. Estimated by the well driller during construction by conducting a well yield test. Measured in US Gallons/minute.</td>
+                           </tr>
+                           <tr>
+                              <td>YIELD_ESTIMATION_DURATION</td>
+                              <td>YIELD_DUR</td>
+                              <td>NUMBER</td>
+                              <td>9</td>
+                              <td>Length of time (in hours) over which a yield test was conducted  by the driller during construction to determine well yield, e.g., 3.25.</td>
+                           </tr>
+                           <tr>
+                              <td>ARTESIAN_COND</td>
+                              <td>ARTSN_CND</td>
+                              <td>CHAR</td>
+                              <td>1</td>
+                              <td>Indicates whether artesian conditions are present for a given well, i.e., Y, N.</td>
+                           </tr>
+                           <tr>
+                              <td>ARTESIAN_FLOW</td>
+                              <td>ARTSN_FLW</td>
+                              <td>NUMBER</td>
+                              <td>8</td>
+                              <td>Measurement of the artesian well water flow that occurs naturally due to inherent water pressure in the well. Pressure within the aquifer forces the groundwater to rise above the land surface naturally without using a pump. Flowing artesian wells can flow on an intermittent or continuous basis. Measured in US Gallons per minute.</td>
+                           </tr>
+                           <tr>
+                              <td>ARTESIAN_PRESSURE</td>
+                              <td>ARTSN_PRSS</td>
+                              <td>NUMBER</td>
+                              <td>8</td>
+                              <td>Pressure of the water coming out of an artesian well as measured at the time of well construction, measured in PSI (pounds per square inch).</td>
+                           </tr>
+                           <tr>
+                              <td>STATIC_WATER_LEVEL</td>
+                              <td>STATIC_LVL</td>
+                              <td>NUMBER</td>
+                              <td>8</td>
+                              <td>The level (depth below ground) to which water will naturally rise in a well without pumping, measured in feet, e.g. 280.0</td>
+                           </tr>
+                           <tr>
+                              <td>DIAMETER</td>
+                              <td>DIAMETER</td>
+                              <td>NUMBER</td>
+                              <td>8</td>
+                              <td>The diameter of the casing of the well, measured in inches, e.g. 6.62. There can be multiple casings in a well, e.g. surface casing, and production casing. Diameter of casing made available to the public is generally the production casing.</td>
+                           </tr>
+                           <tr>
+                              <td>FINAL_CASING_STICK_UP</td>
+                              <td>STICKUP</td>
+                              <td>NUMBER</td>
+                              <td>6</td>
+                              <td>Tthe length of the production casing in the well that is above either (a) the surface of the ground adjacent to the well, or (b) the floor of the well sump, pump house or well pit. Measured as inches, e.g., 30.</td>
+                           </tr>
+                           <tr>
+                              <td>GROUND_ELEVATION</td>
+                              <td>GRND_ELEV</td>
+                              <td>NUMBER</td>
+                              <td>10</td>
+                              <td>The elevation of the well at ground level. Measured as feet above sea level, e.g., 1050</td>
+                           </tr>
+                           <tr>
+                              <td>GROUND_ELEVATION_METHOD</td>
+                              <td>GRND_METHD</td>
+                              <td>VARCHAR2</td>
+                              <td>10</td>
+                              <td>Description of how ground elevation of the well was measured, e.g., unknown, GPS, level, 20K_map, 5K_map, DIFF_GPS, altimeter, 10K_map, 50K_map.</td>
+                           </tr>
+                           <tr>
+                              <td>SURFACE_SEAL_DEPTH</td>
+                              <td>SEAL_DEPTH</td>
+                              <td>NUMBER</td>
+                              <td>5</td>
+                              <td>The total depth (length) of the protective surface seal installed around the outside of the outermost casing or between multiple casings, measured in feet, e.g. 16.</td>
+                           </tr>
+                           <tr>
+                              <td>SURFACE_SEAL_THICKNESS</td>
+                              <td>SEAL_THICK</td>
+                              <td>NUMBER</td>
+                              <td>7</td>
+                              <td>The distance between the outside of the outermost casing and natural ground, or the distance between multiple casings in which the sealant is installed. Measured in inches, e.g., 2.</td>
+                           </tr>
+                           <tr>
+                              <td>SURFACE_SEAL_METHOD</td>
+                              <td>SRFC_SL_MD</td>
+                              <td>VARCHAR2</td>
+                              <td>10</td>
+                              <td>Method of how the surface seal was installed around the well casing, i.e., pumped, poured, other.</td>
+                           </tr>
+                           <tr>
+                              <td>SCREEN_INTAKE_METHOD</td>
+                              <td>SCREENMTHD</td>
+                              <td>VARCHAR2</td>
+                              <td>10</td>
+                              <td>Main entry for water into the well, i.e., open bottom, uncased hole, and screen.</td>
+                           </tr>
+                           <tr>
+                              <td>WATER_SUPPLY_SYSTEM_NAME</td>
+                              <td>SYSTM_NAME</td>
+                              <td>VARCHAR2</td>
+                              <td>80</td>
+                              <td>Owner of the water supply system using the well, e.g., Township of Langley, Cedar Lake Water System, Copperside Estates.</td>
+                           </tr>
+                           <tr>
+                              <td>WATER_SUPPLY_SYSTEM_WELL_NAME</td>
+                              <td>SYSTM_WELL</td>
+                              <td>VARCHAR2</td>
+                              <td>80</td>
+                              <td>Well name or identifier used by the water supply system, e.g.,  Well#5, north well, pine street well.</td>
+                           </tr>
+                           <tr>
+                              <td>CONSTRUCTION_START_DATE</td>
+                              <td>CNSTRCT_ST</td>
+                              <td>DATE</td>
+                              <td>7</td>
+                              <td>The date that the well construction was started.</td>
+                           </tr>
+                           <tr>
+                              <td>CONSTRUCTION_END_DATE</td>
+                              <td>CNSTRCT_EN</td>
+                              <td>DATE</td>
+                              <td>7</td>
+                              <td>The date that the well construction was completed.</td>
+                           </tr>
+                           <tr>
+                              <td>ALTERATION_START_DATE</td>
+                              <td>ALTER_ST</td>
+                              <td>DATE</td>
+                              <td>7</td>
+                              <td>The date that alteration works, such as increasing the well depth or diameter, were started.</td>
+                           </tr>
+                           <tr>
+                              <td>ALTERATION_END_DATE</td>
+                              <td>ALTER_EN</td>
+                              <td>DATE</td>
+                              <td>7</td>
+                              <td>The date that alteration works, such as increasing the well depth or diameter, were completed.</td>
+                           </tr>
+                           <tr>
+                              <td>DECOMMISSION_START_DATE</td>
+                              <td>DECOM_ST</td>
+                              <td>DATE</td>
+                              <td>7</td>
+                              <td>The date that closure works were started in order to take a well permanently out of service.</td>
+                           </tr>
+                           <tr>
+                              <td>DECOMMISSION_END_DATE</td>
+                              <td>DECOM_EN</td>
+                              <td>DATE</td>
+                              <td>7</td>
+                              <td>The date that closure works were completed in order to take a well permanently out of service.</td>
+                           </tr>
+                           <tr>
+                              <td>DECOMMISSION_REASON</td>
+                              <td>DECOM_REAS</td>
+                              <td>VARCHAR2</td>
+                              <td>250</td>
+                              <td>Description or rationale for why well was closed permanently, e.g., dry hole, no longer in use, contamination risk.</td>
+                           </tr>
+                           <tr>
+                              <td>OBSERVATION_WELL_NUMBER</td>
+                              <td>OBSWELLNUM</td>
+                              <td>VARCHAR2</td>
+                              <td>30</td>
+                              <td>The number assigned to a well within the Provincial Groundwater Observation Well Network, e.g., 552.</td>
+                           </tr>
+                           <tr>
+                              <td>OBSERVATION_WELL_STATUS</td>
+                              <td>OBSWELLSTS</td>
+                              <td>VARCHAR2</td>
+                              <td>10</td>
+                              <td>The current status of a well within the Provincial Groundwater Observation Well Network, e.g., Active, Inactive.</td>
+                           </tr>
+                           <tr>
+                              <td>EMS_ID</td>
+                              <td>EMS_ID</td>
+                              <td>VARCHAR2</td>
+                              <td>30</td>
+                              <td>A unique identifier from the provincial Environmental Monitoring System (EMS), to be used for connecting to any well monitoring data, e.g., E218071, 1401072.</td>
+                           </tr>
+                           <tr>
+                              <td>AQUIFER_MATERIAL</td>
+                              <td>AQFR_MTRL</td>
+                              <td>VARCHAR2</td>
+                              <td>100</td>
+                              <td>A high-level description of the aquifer material type the well is located within, i.e., bedrock, unconsolidated, or unknown. </td>
+                           </tr>
+                           <tr>
+                              <td>GEOMETRY</td>
+                              <td>GEOMETRY</td>
+                              <td>SDO_GEOMETRY</td>
+                              <td>64</td>
+                              <td>The column used to reference the spatial coordinates defining the feature.</td>
+                           </tr>
+                           <tr>
+                              <td>OBJECTID</td>
+                              <td>OBJECTID</td>
+                              <td>NUMBER</td>
+                              <td>38</td>
+                              <td>A column required by spatial layers that interact with ESRI ArcSDE. It is populated with unique values automatically by SDE.</td>
+                           </tr>
+                           <tr>
+                              <td>SE_ANNO_CAD_DATA</td>
+                              <td></td>
+                              <td>BLOB</td>
+                              <td>4000</td>
+                              <td>A binary column used by spatial tools to store annotation, curve features and CAD data when using the SDO_GEOMETRY storage data type.</td>
+                           </tr>
+                        </tbody>
+                     </table>
+               <hr style="border-width:5px ">
+            </div>
+         </div>
+      </div>
+   </body>
+</html>
+

@@ -1,0 +1,391 @@
+[
+	{
+		"title" : "Groundwater Wells",
+		"name" : "groundwater-wells",
+		"bcdc_data_resource_url" : "https://catalogue.data.gov.bc.ca/dataset/e4731a85-ffca-4112-8caf-cb0a96905778",
+		"description" : "Point features showing the location of groundwater wells in BC joined with attributes and information from the Groundwater Wells and Aquifers (GWELLS) application. NOTE: Artesian wells are flowing wells at the time of drilling.  \r\n  ",
+		"purpose" : "Spatial view intended to show location and other attributes of wells which have been drilled, dug or driven in the province, to assist in the management and protection of the groundwater resource.",
+		"bcdc_type" : "Geographic",
+		"last_modified" : "2024-02-02T04:37:45",
+		"resource_storage_location" : "Bc Geographic Warehouse",
+		"object_name" : "WHSE_WATER_MANAGEMENT.GW_WATER_WELLS_WRBC_SVW",
+		"object_short_name" : "GW_WW_WRBC",
+		"object_table_comments" : "The locations of groundwater wells in BC.",
+		"projection_name" : "epsg3005",
+		"license_title" : "Open Government Licence - British Columbia",
+		"license_url" : "https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61",
+		"details" : [
+			{
+				"data_precision" : 10,
+				"column_comments" : "A system generated unique identification number",
+				"short_name" : "SYSID",
+				"data_type" : "NUMBER",
+				"column_name" : "GW_WW_SYSID"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "The file number assigned to a particular well in the in the provincial Groundwater Wells and Aquifers application, e.g., 56809.",
+				"short_name" : "WELL_TAG",
+				"data_type" : "NUMBER",
+				"column_name" : "WELL_TAG_NUMBER"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "Steel plate with a unique number that is attached to required wells under the groundwater protection regulations such as water supply wells, recharge or injection wells made by drilling or boring, and permanent dewatering wells, e.g., 691.",
+				"short_name" : "ID_PLATE",
+				"data_type" : "NUMBER",
+				"column_name" : "IDENTIFICATION_PLATE_NUMBER"
+			},
+			{
+				"data_precision" : 200,
+				"column_comments" : "Street address of the property that the well is physically located on.",
+				"short_name" : "ADDRESS",
+				"data_type" : "VARCHAR2",
+				"column_name" : "STREET_ADDRESS"
+			},
+			{
+				"data_precision" : 50,
+				"column_comments" : "The city, town, or general locality where the well is located, e.g. Oliver, Gabriola Island.",
+				"short_name" : "CITY",
+				"data_type" : "VARCHAR2",
+				"column_name" : "CITY"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "The smallest designation of land (the lot number) from the legal description of the land parcel where the well is located, e.g., B, 2.",
+				"short_name" : "LEGAL_LOT",
+				"data_type" : "VARCHAR2",
+				"column_name" : "LEGAL_LOT"
+			},
+			{
+				"data_precision" : 20,
+				"column_comments" : "The plan number from the legal description of the land parcel where the well is located, e.g., 1261, 13604, LMP7728.",
+				"short_name" : "LEGAL_PLAN",
+				"data_type" : "VARCHAR2",
+				"column_name" : "LEGAL_PLAN"
+			},
+			{
+				"data_precision" : 20,
+				"column_comments" : "The district lot number from the legal description of the land parcel where the well is located, e.g., 456,  1234s.",
+				"short_name" : "LGL_DSTRCT",
+				"data_type" : "VARCHAR2",
+				"column_name" : "LEGAL_DISTRICT_LOT"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "The parcel identifier (PID) of the land parcel where the well is located, e.g., 014905736.",
+				"short_name" : "LEGAL_PID",
+				"data_type" : "NUMBER",
+				"column_name" : "LEGAL_PID"
+			},
+			{
+				"data_precision" : 500,
+				"column_comments" : "An informal description of where the well is located on a property, e.g., 50m to the right of the house and behind the shed.",
+				"short_name" : "LOCN_DESCR",
+				"data_type" : "VARCHAR2",
+				"column_name" : "WELL_LOCATION_DESCRIPTION"
+			},
+			{
+				"data_precision" : 1,
+				"column_comments" : "The approximate accuracy of the geographic coordinates provided, e.g., H (default accuracy; (10 m accuracy) handheld GPS with accuracy of +/- 10 meters), A (10 m accuracy - cadastre and good location sketch), C (50 m accuracy - Digitized from 1:20,000 mapping), I (20 m accuracy - no cadastre but good location sketch or good written description), G (unknown, accuracy based on parcel size - No cadastre, poor or no location sketch; site located in center of primary parcel), J (unknown, accuracy based on parcel size - cadastre, poor or no location sketch, arbitrarily located in center of parcel).",
+				"short_name" : "COORDAQ",
+				"data_type" : "VARCHAR2",
+				"column_name" : "COORDINATE_ACQUISITION_CODE"
+			},
+			{
+				"data_precision" : 300,
+				"column_comments" : "Description of the status of a well as defined in the Groundwater Protection Regulation of the Water Act, i.e. New, Abandoned, Alteration, Closure, Other.",
+				"short_name" : "WELLSTATUS",
+				"data_type" : "VARCHAR2",
+				"column_name" : "WELL_STATUS"
+			},
+			{
+				"data_precision" : 100,
+				"column_comments" : "Valid classification as defined in the Groundwater Protection Regulation of the Water Sustainability Act, i.e., Water Supply, Monitoring, Recharge, Injection, Dewatering, Drainage, Remediation, Geotechnical, Closed-loop geoexchange.",
+				"short_name" : "WELL_CLASS",
+				"data_type" : "VARCHAR2",
+				"column_name" : "WELL_CLASS"
+			},
+			{
+				"data_precision" : 20,
+				"column_comments" : "Valid subclassification as defined in the Groundwater Protection Regulation of the Water Sustainability Act, e.g.,  Temporary, Permanent, Borehole, Artesian.",
+				"short_name" : "WLL_SBCLSS",
+				"data_type" : "VARCHAR2",
+				"column_name" : "WELL_SUBCLASS"
+			},
+			{
+				"data_precision" : 100,
+				"column_comments" : "The intended use of the water in a water supply well as reported by the driller at time of work completion on the well, e.g., private domestic, irrigation, water supply system, industrial commercial, unknown.",
+				"short_name" : "INTEND_USE",
+				"data_type" : "VARCHAR2",
+				"column_name" : "INTENDED_WATER_USE"
+			},
+			{
+				"data_precision" : 255,
+				"column_comments" : "Link to the well summary report within the Groundwater Wells and Aquifer (GWELLS) application, which provides the overall description and history of the well.",
+				"short_name" : "WELL_URL",
+				"data_type" : "VARCHAR2",
+				"column_name" : "WELL_DETAILS_URL"
+			},
+			{
+				"data_precision" : 300,
+				"column_comments" : "Description of valid licencing option granted to a well under the Water Water Sustainability Act. This information comes from eLicensing, i.e. Unlicensed, Licensed, Historical",
+				"short_name" : "LIC_STATUS",
+				"data_type" : "VARCHAR2",
+				"column_name" : "LICENCE_STATUS"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "System generated unique sequential number assigned to each mapped aquifer. The aquifer ID identifies which aquifer a well is in.  An aquifer can have multiple wells, while a single well can only be in one aquifer.",
+				"short_name" : "AQUIFER_ID",
+				"data_type" : "NUMBER",
+				"column_name" : "AQUIFER_ID"
+			},
+			{
+				"data_precision" : 300,
+				"column_comments" : "Name (and registration ID) of the registered driller or pump installer responsible for constructing, altering, or decommissioning the well, e.g., Jane Doe (WD 06666666).",
+				"short_name" : "PERSON",
+				"data_type" : "VARCHAR2",
+				"column_name" : "PERSON_RESPONSIBLE"
+			},
+			{
+				"data_precision" : 300,
+				"column_comments" : "Name (and location) of the registered driller or pump installer company responsible for constructing, altering, or decommissioning the well, e.g., Geotech Drilling Services Ltd. (Vernon, BC).",
+				"short_name" : "COMPANY",
+				"data_type" : "VARCHAR2",
+				"column_name" : "COMPANY_OF_PERSON_RESPONSIBLE"
+			},
+			{
+				"data_precision" : 8,
+				"column_comments" : "The depth at which the well was finished, measured in units of feet bgl (below ground level), e.g. 157.0. It can be shallower than the total well depth which is the total depth at which the well was drilled.",
+				"short_name" : "FNSH_DEPTH",
+				"data_type" : "NUMBER",
+				"column_name" : "FINISHED_WELL_DEPTH"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The deepest depth a well was drilled to, reported as feet below ground level, e.g., 150.",
+				"short_name" : "TTL_DEPTH",
+				"data_type" : "NUMBER",
+				"column_name" : "TOTAL_DEPTH_DRILLED"
+			},
+			{
+				"data_precision" : 8,
+				"column_comments" : "Depth below ground level at which bedrock starts, measured in feet, e.g. 132.0.",
+				"short_name" : "BED_DEPTH",
+				"data_type" : "NUMBER",
+				"column_name" : "BEDROCK_DEPTH"
+			},
+			{
+				"data_precision" : 8,
+				"column_comments" : "An approximate estimate of the capacity of the well to produce groundwater. Estimated by the well driller during construction by conducting a well yield test. Measured in US Gallons/minute.",
+				"short_name" : "YIELD",
+				"data_type" : "NUMBER",
+				"column_name" : "YIELD"
+			},
+			{
+				"data_precision" : 9,
+				"column_comments" : "Length of time (in hours) over which a yield test was conducted  by the driller during construction to determine well yield, e.g., 3.25.",
+				"short_name" : "YIELD_DUR",
+				"data_type" : "NUMBER",
+				"column_name" : "YIELD_ESTIMATION_DURATION"
+			},
+			{
+				"data_precision" : 1,
+				"column_comments" : "Indicates whether artesian conditions are present for a given well, i.e., Y, N.",
+				"short_name" : "ARTSN_CND",
+				"data_type" : "CHAR",
+				"column_name" : "ARTESIAN_COND"
+			},
+			{
+				"data_precision" : 8,
+				"column_comments" : "Measurement of the artesian well water flow that occurs naturally due to inherent water pressure in the well. Pressure within the aquifer forces the groundwater to rise above the land surface naturally without using a pump. Flowing artesian wells can flow on an intermittent or continuous basis. Measured in US Gallons per minute.",
+				"short_name" : "ARTSN_FLW",
+				"data_type" : "NUMBER",
+				"column_name" : "ARTESIAN_FLOW"
+			},
+			{
+				"data_precision" : 8,
+				"column_comments" : "Pressure of the water coming out of an artesian well as measured at the time of well construction, measured in PSI (pounds per square inch).",
+				"short_name" : "ARTSN_PRSS",
+				"data_type" : "NUMBER",
+				"column_name" : "ARTESIAN_PRESSURE"
+			},
+			{
+				"data_precision" : 8,
+				"column_comments" : "The level (depth below ground) to which water will naturally rise in a well without pumping, measured in feet, e.g. 280.0",
+				"short_name" : "STATIC_LVL",
+				"data_type" : "NUMBER",
+				"column_name" : "STATIC_WATER_LEVEL"
+			},
+			{
+				"data_precision" : 8,
+				"column_comments" : "The diameter of the casing of the well, measured in inches, e.g. 6.62. There can be multiple casings in a well, e.g. surface casing, and production casing. Diameter of casing made available to the public is generally the production casing.",
+				"short_name" : "DIAMETER",
+				"data_type" : "NUMBER",
+				"column_name" : "DIAMETER"
+			},
+			{
+				"data_precision" : 6,
+				"column_comments" : "Tthe length of the production casing in the well that is above either (a) the surface of the ground adjacent to the well, or (b) the floor of the well sump, pump house or well pit. Measured as inches, e.g., 30.",
+				"short_name" : "STICKUP",
+				"data_type" : "NUMBER",
+				"column_name" : "FINAL_CASING_STICK_UP"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "The elevation of the well at ground level. Measured as feet above sea level, e.g., 1050",
+				"short_name" : "GRND_ELEV",
+				"data_type" : "NUMBER",
+				"column_name" : "GROUND_ELEVATION"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "Description of how ground elevation of the well was measured, e.g., unknown, GPS, level, 20K_map, 5K_map, DIFF_GPS, altimeter, 10K_map, 50K_map.",
+				"short_name" : "GRND_METHD",
+				"data_type" : "VARCHAR2",
+				"column_name" : "GROUND_ELEVATION_METHOD"
+			},
+			{
+				"data_precision" : 5,
+				"column_comments" : "The total depth (length) of the protective surface seal installed around the outside of the outermost casing or between multiple casings, measured in feet, e.g. 16.",
+				"short_name" : "SEAL_DEPTH",
+				"data_type" : "NUMBER",
+				"column_name" : "SURFACE_SEAL_DEPTH"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The distance between the outside of the outermost casing and natural ground, or the distance between multiple casings in which the sealant is installed. Measured in inches, e.g., 2.",
+				"short_name" : "SEAL_THICK",
+				"data_type" : "NUMBER",
+				"column_name" : "SURFACE_SEAL_THICKNESS"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "Method of how the surface seal was installed around the well casing, i.e., pumped, poured, other.",
+				"short_name" : "SRFC_SL_MD",
+				"data_type" : "VARCHAR2",
+				"column_name" : "SURFACE_SEAL_METHOD"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "Main entry for water into the well, i.e., open bottom, uncased hole, and screen.",
+				"short_name" : "SCREENMTHD",
+				"data_type" : "VARCHAR2",
+				"column_name" : "SCREEN_INTAKE_METHOD"
+			},
+			{
+				"data_precision" : 80,
+				"column_comments" : "Owner of the water supply system using the well, e.g., Township of Langley, Cedar Lake Water System, Copperside Estates.",
+				"short_name" : "SYSTM_NAME",
+				"data_type" : "VARCHAR2",
+				"column_name" : "WATER_SUPPLY_SYSTEM_NAME"
+			},
+			{
+				"data_precision" : 80,
+				"column_comments" : "Well name or identifier used by the water supply system, e.g.,  Well#5, north well, pine street well.",
+				"short_name" : "SYSTM_WELL",
+				"data_type" : "VARCHAR2",
+				"column_name" : "WATER_SUPPLY_SYSTEM_WELL_NAME"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The date that the well construction was started.",
+				"short_name" : "CNSTRCT_ST",
+				"data_type" : "DATE",
+				"column_name" : "CONSTRUCTION_START_DATE"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The date that the well construction was completed.",
+				"short_name" : "CNSTRCT_EN",
+				"data_type" : "DATE",
+				"column_name" : "CONSTRUCTION_END_DATE"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The date that alteration works, such as increasing the well depth or diameter, were started.",
+				"short_name" : "ALTER_ST",
+				"data_type" : "DATE",
+				"column_name" : "ALTERATION_START_DATE"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The date that alteration works, such as increasing the well depth or diameter, were completed.",
+				"short_name" : "ALTER_EN",
+				"data_type" : "DATE",
+				"column_name" : "ALTERATION_END_DATE"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The date that closure works were started in order to take a well permanently out of service.",
+				"short_name" : "DECOM_ST",
+				"data_type" : "DATE",
+				"column_name" : "DECOMMISSION_START_DATE"
+			},
+			{
+				"data_precision" : 7,
+				"column_comments" : "The date that closure works were completed in order to take a well permanently out of service.",
+				"short_name" : "DECOM_EN",
+				"data_type" : "DATE",
+				"column_name" : "DECOMMISSION_END_DATE"
+			},
+			{
+				"data_precision" : 250,
+				"column_comments" : "Description or rationale for why well was closed permanently, e.g., dry hole, no longer in use, contamination risk.",
+				"short_name" : "DECOM_REAS",
+				"data_type" : "VARCHAR2",
+				"column_name" : "DECOMMISSION_REASON"
+			},
+			{
+				"data_precision" : 30,
+				"column_comments" : "The number assigned to a well within the Provincial Groundwater Observation Well Network, e.g., 552.",
+				"short_name" : "OBSWELLNUM",
+				"data_type" : "VARCHAR2",
+				"column_name" : "OBSERVATION_WELL_NUMBER"
+			},
+			{
+				"data_precision" : 10,
+				"column_comments" : "The current status of a well within the Provincial Groundwater Observation Well Network, e.g., Active, Inactive.",
+				"short_name" : "OBSWELLSTS",
+				"data_type" : "VARCHAR2",
+				"column_name" : "OBSERVATION_WELL_STATUS"
+			},
+			{
+				"data_precision" : 30,
+				"column_comments" : "A unique identifier from the provincial Environmental Monitoring System (EMS), to be used for connecting to any well monitoring data, e.g., E218071, 1401072.",
+				"short_name" : "EMS_ID",
+				"data_type" : "VARCHAR2",
+				"column_name" : "EMS_ID"
+			},
+			{
+				"data_precision" : 100,
+				"column_comments" : "A high-level description of the aquifer material type the well is located within, i.e., bedrock, unconsolidated, or unknown. ",
+				"short_name" : "AQFR_MTRL",
+				"data_type" : "VARCHAR2",
+				"column_name" : "AQUIFER_MATERIAL"
+			},
+			{
+				"data_precision" : 64,
+				"column_comments" : "The column used to reference the spatial coordinates defining the feature.",
+				"short_name" : "GEOMETRY",
+				"data_type" : "SDO_GEOMETRY",
+				"column_name" : "GEOMETRY"
+			},
+			{
+				"data_precision" : 38,
+				"column_comments" : "A column required by spatial layers that interact with ESRI ArcSDE. It is populated with unique values automatically by SDE.",
+				"short_name" : "OBJECTID",
+				"data_type" : "NUMBER",
+				"column_name" : "OBJECTID"
+			},
+			{
+				"data_precision" : 4000,
+				"column_comments" : "A binary column used by spatial tools to store annotation, curve features and CAD data when using the SDO_GEOMETRY storage data type.",
+				"short_name" : null,
+				"data_type" : "BLOB",
+				"column_name" : "SE_ANNO_CAD_DATA"
+			}
+		]
+	}
+]

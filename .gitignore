@@ -1,0 +1,17 @@
+daily*.csv
+*.grib
+*.cpg
+*.dbf
+*.prj
+*.shp
+*.shx
+*.ascii
+*.gdb
+*.gdtable
+*.spx
+Watersheds_natural_BC.gpkg
+*.png
+*.svg
+*streamDataNaturalRecent20yr.rds
+*LicensedUse.gpkg
+*UnlicensedWellsUse.gpkg

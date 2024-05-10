@@ -1,0 +1,15 @@
+
+------------------
+Order Details
+-----------------
+Order ID: 2309733
+Date: 20230829
+
+----------------------
+Feature Types
+-----------------------
+ - Water Rights Licences - Public in directory WLS_WRL_P
+
+----------------------------
+Packaged Products
+----------------------------
