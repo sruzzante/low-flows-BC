@@ -3,21 +3,14 @@ library(sf)
 library(terra)
 library(doParallel)
 library(foreach)
-library(tmap)
+
 setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria./DATA/1.Spatial_data/regional/BC/lulc_landuse_landcover/"))
 
-# cutblocks<-vect("/lulc1_Consolidated_Cut_Block/Consolidated_Cut_Block.gdb")
 firePerims<-st_read("lulc1_Fire_perimeters/PROT_HISTORICAL_FIRE_POLYS_SP/H_FIRE_PLY_polygon.shp")
 firePerims<-firePerims%>%filter(FIRE_YEAR>1976)
 firePerims_ls<-split(firePerims,firePerims$FIRE_YEAR)
 
-# d<-cutblocks%>%
-#   st_drop_geometry()%>%
-#   group_by(HARVEST_YEAR)%>%
-#   summarize(cut_area = sum(Shape_Area))
 
-# ggplot(d)+geom_line(aes(x = HARVEST_YEAR,y = cut_area))
-# bc<-bcmaps::bc_bound()
 
 (er <- rast(ext( c(xmin = 275000,xmax = 1871000 ,ymin = 367000,ymax = 1736000 )), resolution=30) ) 
 crs(er) <- crs(firePerims)
