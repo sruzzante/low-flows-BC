@@ -1,3 +1,10 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-10
+
+
+# This script performs the stationarity analysis presented in Section 3.2.2
+
 
 closeAllConnections()
 rm(list=ls())

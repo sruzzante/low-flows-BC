@@ -1,3 +1,14 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-10
+
+
+# This script extracts daily climate data from T and P rasters, using the catchment polygons.
+# https://ftp.maps.canada.ca/pub/nrcan_rncan/Climate-archives_Archives-climatologiques/daily/
+# These are not included in the repository due to size limitations (~85 GB)
+# The script will take a few hours to run
+
+
 library(stringr)
 library(terra)
 library(lubridate)

@@ -1,3 +1,12 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-10
+
+
+# This script performs the main driver/sensitivity analysis presented in the manuscript
+# First it loads all the relevant, prepared data
+# Then it loops through the stations, fitting the 'explanatory' regressions to each
+
 
 closeAllConnections()
 rm(list=ls())
@@ -18,29 +27,29 @@ library(grwat)
 setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-BC/")) #Set the working directory
 
 # Load streamflow data
-streamDataAll<-readRDS("2.data/2.working/Discharge/streamDataFinal_2.rds")
+streamDataAll<-readRDS("2.data/2.working/Discharge/streamDataFinal.rds")
 # streamDataMonthly<-readRDS("2.data/2.working/Discharge/streamDataMonthly_2.RDS")
 
 # Load Station metadata
 # stations<-read.csv("2.data/2.working/StationMetadata/stations_final.csv",fileEncoding = "UTF-8-BOM")
-stations<-readRDS("2.data/2.working/StationMetadata/stations_final_2.RDS")
+stations<-readRDS("2.data/2.working/StationMetadata/stations_final.RDS")
 
 # Load catchment polygons
-watersheds <- st_read("2.data/2.working/CatchmentPolygons/watersheds_final_2.gpkg")
+watersheds <- st_read("2.data/2.working/CatchmentPolygons/watersheds_final.gpkg")
 
 # Load monthly weather data
-WeatherData<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataMonthly_2.RDS")
+WeatherData<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataMonthly.RDS")
 
 # Load daily weather data
 WeatherDataDaily<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataDaily.RDS")
 
 
-streamDataAll<-left_join(streamDataAll,WeatherDataDaily[,-which(names(WeatherDataDaily)=="Date")])
+streamDataAll<-left_join(streamDataAll,WeatherDataDaily)
 
 #Load monthly SWE data
 data_SWE<-readRDS("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment.RDS")
 #Load daily SWE data
-data_SWE_dly<-read.csv("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")
+data_SWE_dly<-readRDS("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")
 
 
 names(data_SWE_dly)<-c("ID","Date","SWE")
@@ -51,14 +60,8 @@ data_SWE$date <- data_SWE$variable%>%ymd()
 data_SWE$Year<-year(data_SWE$date)
 data_SWE$Month<-month(data_SWE$date)
 
-# data_SWE<-data_SWE%>%
-#   group_by(ID,Year,Month)%>%
-#   summarize(value = mean(value))
 
-getMode <- function(v) {
-  uniqv <- unique(v)
-  uniqv[which.max(tabulate(match(v, uniqv)))]
-}
+# find the median month of maximum snow accumulation for each station
 maxMonth<-data_SWE%>%
   group_by(ID,Year)%>%
   dplyr::summarise(maxMonth = Month[which.max(value)])
@@ -390,7 +393,8 @@ for(it_stn in 1:length(stations$ID)){
   # ggplot(dataYearly2,aes(x = maxSWEdly,y = minSumFlow7.log))+geom_point()
   
   
-  if(stations$PrivateForestry[it_stn]<=0.1&stations$Total.Cut.Area[it_stn]>0.1){
+  if(stations$PrivateForestry[it_stn]<=0.1&stations$Total.Cut.Area[it_stn]>0.1&
+     any(!is.na(dat$ECA_I_9))){
     mylm<-update(mylm,~.+ECA_I_9)
     if(any(!is.na(dat$ECA_III_24))){
       mylm<-update(mylm,~.+ECA_III_24)
@@ -591,8 +595,8 @@ for(it_stn in 1:length(stations$ID)){
   stations$lowQ.10_highSWE.90[it_stn]<-sum((dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))[dat2$maxSWEdly>=quantile(dat2$maxSWEdly,0.9)])/
     sum(dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))
   
-  # lowQ.10_highSWE.90.years[[it_stn]]<-dat2$NovWaterYear[(dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))&
-  #                                                          dat2$maxSWEdly>=quantile(dat2$maxSWEdly,0.9)]
+  lowQ.10_highSWE.90.years[[it_stn]]<-dat2$NovWaterYear[(dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))&
+                                                           dat2$maxSWEdly>=quantile(dat2$maxSWEdly,0.9)]
   msk<-(dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))&
     dat2$maxSWEdly>=quantile(dat2$maxSWEdly,0.9)
   if(sum(msk)>0){
@@ -715,14 +719,17 @@ stnCoeffs.long%>%
   group_by(variable,regime)%>%
   dplyr::summarize(median(Beta,na.rm = TRUE),
                    mean(Beta,na.rm = TRUE),
-                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)))%>%
+                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)),
+                   sum(p.val<0.05&Beta<0,na.rm = TRUE)/sum(!is.na(p.val)))%>%
   print(n = 100)
 
 stnCoeffs.long%>%
   group_by(variable)%>%
   dplyr::summarize(median(Beta,na.rm = TRUE),
                    mean(Beta,na.rm = TRUE),
-                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)))%>%
+                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)),
+                   sum(p.val<0.05&Beta>0,na.rm = TRUE)/sum(!is.na(p.val)),
+                   sum(p.val<0.05&Beta<0,na.rm = TRUE)/sum(!is.na(p.val)))%>%
   print(n = 100)
 
 
@@ -805,14 +812,16 @@ stnRs.long%>%
   group_by(variable,regime)%>%
   dplyr::summarize(median(r,na.rm = TRUE),
                    mean(r,na.rm = TRUE),
-                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)))%>%
+                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)),
+                   sum(p.val<0.05&r>0,na.rm = TRUE)/sum(!is.na(p.val)))%>%
   print(n = 100)
 
 stnRs.long%>%
   group_by(variable)%>%
   dplyr::summarize(median(r,na.rm = TRUE),
                    mean(r,na.rm = TRUE),
-                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)))%>%
+                   sum(p.val<0.05,na.rm = TRUE)/sum(!is.na(p.val)),
+                   sum(p.val<0.05&r>0,na.rm = TRUE)/sum(!is.na(p.val)))%>%
   print(n = 100)
 
 
@@ -1060,6 +1069,7 @@ stations%>%group_by()%>%
                    mean(lowQ.10_highSWE.90))
 sum(stations$lowQ.10_highSWE>0)
 sum(stations$lowQ.10_highSWE.90>0)
+
 lowQ.10_highSWE.90.years%>%
   unlist()%>%
   factor()%>%
@@ -1409,7 +1419,8 @@ for(it_stn in 1:length(stations$ID)){
     # ggplot(dataYearly2,aes(x = maxSWEdly,y = minSumFlow7.log))+geom_point()
     
     
-    if(stations$PrivateForestry[it_stn]<=0.1&stations$Total.Cut.Area[it_stn]>0.1){
+    if(stations$PrivateForestry[it_stn]<=0.1&stations$Total.Cut.Area[it_stn]>0.1&
+       any(!is.na(dat$ECA_I_9))){
       mylm<-update(mylm,~.+ECA_I_9)
       if(any(!is.na(dat$ECA_III_24))){
         mylm<-update(mylm,~.+ECA_III_24)
@@ -1463,84 +1474,84 @@ stnCoeffs$regime<-factor(stnCoeffs$regime,
                          levels = c("Rainfall","Hybrid","Snowfall","Glacial")%>%rev(),
                          labels = c("Rainfall","Hybrid","Snowmelt","Glacial")%>%rev())
 
-for(it_mn in 7:10){
-  
-  
-  
-  
-  stnCoeffs.long<-stnCoeffs%>%
-    filter(month==it_mn)%>%
-    # select(!.p)%>%
-    pivot_longer(cols = summerPrecip:Total.cms.p)
-  
-  stnCoeffs.long$p.val<-str_detect(stnCoeffs.long$name,"\\.p")%>%
-    plyr::mapvalues(from = c(FALSE,TRUE),
-                    to = c("Beta","p.val"))
-  
-  stnCoeffs.long$name<-str_remove(stnCoeffs.long$name,"\\.p")
-  stnCoeffs.long<-pivot_wider(stnCoeffs.long,
-                              names_from = "p.val",
-                              values_from = value)
-  
-  stnCoeffs.long$Beta<-as.numeric(stnCoeffs.long$Beta)
-  stnCoeffs.long$p.val<-as.numeric(stnCoeffs.long$p.val)
-  
-  stnCoeffs.long$variable<-factor(stnCoeffs.long$name,
-                                  levels = c("maxSWEdly","BF_30day_Eckhardt0.97","summerPrecip","meanSummerTemp","SumT7","Total.cms","ECA_I_9","ECA_III_24"),
-                                  labels = c("SWE[max]","BF[winter]","P[summer]","T[summer]","T[7]","Abstraction","ECA[I]", "ECA[III]"))
-  
-  N_vals<-stnCoeffs.long%>%
-    filter(!is.na(Beta))%>%
-    group_by(regime, variable)%>%
-    dplyr::summarize(N=n())
-  
-  ggplot(stnCoeffs.long%>%
-           subset(!is.na(Beta))%>%
-           mutate(Beta = pmax(pmin(Beta,0.8),-0.8)),
-         
-         aes(y = regime,
-             # x = value
-             x = Beta
-         ))+
-    geom_vline(xintercept = 0,col = "grey50",linewidth = 1)+
-    geom_boxplot(outlier.size = 0.5,outlier.shape = NA)+
-    geom_text(data = N_vals, aes(x = 0.9,y = regime,label = N),size = 3)+
-    # geom_jitter(data = . %>% filter(p.val <0.05),color = "red",size = 0.5,height = 0.2)+
-    geom_jitter(aes(color = p.val<0.05),size = 0.5,height = 0.2,alpha=0.5)+
-    # geom_dotplot()+
-    # geom_violin(scale = "width",adjust = 0.5)+
-    # geom_point(stat = "summary",fun = "median")+
-    scale_y_discrete(
-      # labels = c("Glacial","Snowmelt","Hybrid","Rainfall"),
-      name = NULL,
-      position = "right")+
-    scale_x_continuous(name = expression(italic(beta)),
-                       # oob = oob_squish,
-                       limits = c(-.8,.9),
-                       breaks = c(-.8,-0.4,0,0.4,.8),
-                       labels = c("≤ -0.8","-0.4","0","0.4","≥ 0.8"))+
-    scale_color_manual(name = "",values = c("grey","red"),
-                       labels = c("p≥0.05","p<0.05"))+
-    # scale_x_continuous(name = expression(r^2%*%sign(r)))+
-    # scale_x_continuous(name = expression(Pearson~r%*%"| r |"))+
-    
-    facet_wrap(facets = "variable", ncol = 1,strip.position = "left",
-               labeller = label_parsed)+
-    theme_bw()+
-    theme(legend.position = c(0.15,0.93),
-          legend.background = element_rect(color = "black",fill = alpha('white',0.5)),
-          legend.margin = margin(t=-4,r=1,b=-2,l=0,unit = "pt"),
-          legend.key = element_blank(),
-          legend.title = element_blank(),
-          # panel.grid.major.y = element_blank(),
-          # panel.grid.minor.y = element_blank()
-    )
-  
-  
-  ggsave(paste0("3.figures/Sens_boxplots_beta_",it_mn,".png"),width = 4, height = 7.5)
-  
-  
-}
+# for(it_mn in 7:10){
+#   
+#   
+#   
+#   
+#   stnCoeffs.long<-stnCoeffs%>%
+#     filter(month==it_mn)%>%
+#     # select(!.p)%>%
+#     pivot_longer(cols = summerPrecip:Total.cms.p)
+#   
+#   stnCoeffs.long$p.val<-str_detect(stnCoeffs.long$name,"\\.p")%>%
+#     plyr::mapvalues(from = c(FALSE,TRUE),
+#                     to = c("Beta","p.val"))
+#   
+#   stnCoeffs.long$name<-str_remove(stnCoeffs.long$name,"\\.p")
+#   stnCoeffs.long<-pivot_wider(stnCoeffs.long,
+#                               names_from = "p.val",
+#                               values_from = value)
+#   
+#   stnCoeffs.long$Beta<-as.numeric(stnCoeffs.long$Beta)
+#   stnCoeffs.long$p.val<-as.numeric(stnCoeffs.long$p.val)
+#   
+#   stnCoeffs.long$variable<-factor(stnCoeffs.long$name,
+#                                   levels = c("maxSWEdly","BF_30day_Eckhardt0.97","summerPrecip","meanSummerTemp","SumT7","Total.cms","ECA_I_9","ECA_III_24"),
+#                                   labels = c("SWE[max]","BF[winter]","P[summer]","T[summer]","T[7]","Abstraction","ECA[I]", "ECA[III]"))
+#   
+#   N_vals<-stnCoeffs.long%>%
+#     filter(!is.na(Beta))%>%
+#     group_by(regime, variable)%>%
+#     dplyr::summarize(N=n())
+#   
+#   ggplot(stnCoeffs.long%>%
+#            subset(!is.na(Beta))%>%
+#            mutate(Beta = pmax(pmin(Beta,0.8),-0.8)),
+#          
+#          aes(y = regime,
+#              # x = value
+#              x = Beta
+#          ))+
+#     geom_vline(xintercept = 0,col = "grey50",linewidth = 1)+
+#     geom_boxplot(outlier.size = 0.5,outlier.shape = NA)+
+#     geom_text(data = N_vals, aes(x = 0.9,y = regime,label = N),size = 3)+
+#     # geom_jitter(data = . %>% filter(p.val <0.05),color = "red",size = 0.5,height = 0.2)+
+#     geom_jitter(aes(color = p.val<0.05),size = 0.5,height = 0.2,alpha=0.5)+
+#     # geom_dotplot()+
+#     # geom_violin(scale = "width",adjust = 0.5)+
+#     # geom_point(stat = "summary",fun = "median")+
+#     scale_y_discrete(
+#       # labels = c("Glacial","Snowmelt","Hybrid","Rainfall"),
+#       name = NULL,
+#       position = "right")+
+#     scale_x_continuous(name = expression(italic(beta)),
+#                        # oob = oob_squish,
+#                        limits = c(-.8,.9),
+#                        breaks = c(-.8,-0.4,0,0.4,.8),
+#                        labels = c("≤ -0.8","-0.4","0","0.4","≥ 0.8"))+
+#     scale_color_manual(name = "",values = c("grey","red"),
+#                        labels = c("p≥0.05","p<0.05"))+
+#     # scale_x_continuous(name = expression(r^2%*%sign(r)))+
+#     # scale_x_continuous(name = expression(Pearson~r%*%"| r |"))+
+#     
+#     facet_wrap(facets = "variable", ncol = 1,strip.position = "left",
+#                labeller = label_parsed)+
+#     theme_bw()+
+#     theme(legend.position = c(0.15,0.93),
+#           legend.background = element_rect(color = "black",fill = alpha('white',0.5)),
+#           legend.margin = margin(t=-4,r=1,b=-2,l=0,unit = "pt"),
+#           legend.key = element_blank(),
+#           legend.title = element_blank(),
+#           # panel.grid.major.y = element_blank(),
+#           # panel.grid.minor.y = element_blank()
+#     )
+#   
+#   
+#   ggsave(paste0("3.figures/Sens_boxplots_beta_",it_mn,".png"),width = 4, height = 7.5)
+#   
+#   
+# }
 
 
 

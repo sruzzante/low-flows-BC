@@ -1,9 +1,21 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-10
+
 # Prepare Catchment Polygon data
+# From two sources: 
+# Hydrometric Basin Network Polygons: https://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/HydrometricNetworkBasinPolygons/
+# Delineation by Jeremy Krogh: https://www.arcgis.com/apps/mapviewer/index.html?layers=844c585dbe7a44e382564446e21690e4
+
+# This script also creates a line for the continental divide in BC and polygons
+# for the east and west of the province.
+
 library(sf)
 setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-BC/")) #Set the working directory
 
 
 stations<-read.csv("2.data/1.original/Discharge_natural/stationList.csv",fileEncoding = "UTF-8-BOM")
+
 # Load in data from Hydrometric Basin
 shapefileList<-list.files(path = "2.data/1.original/CatchmentPolygons/HydrometricNetworkBasinPolygons/data",
                           pattern = "_DrainageBasin_BassinDeDrainage.shp",recursive = TRUE)
@@ -29,11 +41,6 @@ watersheds_valid<-watersheds%>%
   st_make_valid()
 watersheds_valid<-watersheds_valid[order(watersheds_valid$Area_km2,decreasing = TRUE),]
 tm_shape(watersheds_valid)+tm_polygons(alpha = 0.5)
-
-# st_write(watersheds_valid,"2.data/2.working/CatchmentPolygons/Watersheds_selected_HNBP.gpkg",delete_dsn = TRUE)
-# # 
-# # 
-# watersheds_valid<-st_read("2.data/2.working/CatchmentPolygons/Watersheds_selected_HNBP.gpkg")
 
 x<-st_read("2.data/1.original/CatchmentPolygons/Jeremy_Krogh_delineation/Watersheds.shp")
 names(watersheds_valid)

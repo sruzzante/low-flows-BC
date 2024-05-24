@@ -1,3 +1,16 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+
+# This script estimates ground water use for each catchment, using:
+# BC water license data (https://catalogue.data.gov.bc.ca/dataset/water-rights-licences-public)
+# Well data https://catalogue.data.gov.bc.ca/dataset/groundwater-wells
+# BC Assessment Folio data. This is the only dataset used in this paper that is not fully open-source, though it is available for universities in British Columbia  (https://databases.lib.sfu.ca/record/61430687690003610/BC-Assessment-Data-Advice)
+# BC parcel map https://catalogue.data.gov.bc.ca/dataset/parcelmap-bc-parcel-polygons-ogl
+
+# Method is described in Appendix B
+
 
 closeAllConnections()
 rm(list=ls())

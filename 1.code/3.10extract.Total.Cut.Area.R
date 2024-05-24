@@ -1,3 +1,8 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+# This script calculates the total cut/burned fraction of each watershed, since 1900
 
 #library(sf)
 library(terra)
@@ -16,7 +21,7 @@ TCA_fun<-function(xAge){
 
 
 
-watersheds<-vect("./2.data/2.working/CatchmentPolygons/watersheds_final_2.gpkg")
+watersheds<-vect("./2.data/2.working/CatchmentPolygons/watersheds_final.gpkg")
 
 forestAge_x<-terra::rast(paste0("../DATA/1.Spatial_data/regional/BC/lulc_landuse_landcover/lulc2_forestAge/forestAge_2022.tif"))
 
@@ -50,9 +55,9 @@ plot(maskPrivate_bc)
 
 # maskPrivateBC<-crop(maskPrivate)
 
-watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final_2.gpkg")%>%
+watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final.gpkg")%>%
   st_transform(st_crs(maskPrivate))
-stations<-readRDS("2.data/2.working/StationMetadata/stations_final_2.RDS")
+stations<-readRDS("2.data/2.working/StationMetadata/stations_final.RDS")
 
 
 watersheds_Private<-terra::extract(maskPrivate,watersheds,fun = mean)
@@ -65,4 +70,4 @@ names(TCA)[3]<-"Total.Cut.Area"
 stations<-left_join(stations,TCA%>%select(StationNum,Total.Cut.Area),by = c("ID" = "StationNum"))
 
 # overwrite the 'stations' file with the new information
-saveRDS(stations,"2.data/2.working/StationMetadata/stations_final_2.RDS")
+saveRDS(stations,"2.data/2.working/StationMetadata/stations_final.RDS")

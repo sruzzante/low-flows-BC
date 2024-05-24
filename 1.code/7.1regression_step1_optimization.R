@@ -1,3 +1,11 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+
+# This script optimizes the regressions using 10 x 5-fold cross-validation with all subsets of variables.
+# It saves the best model to a file named step1_XXXXXXX_.rds, where XXXXXXX is the station ID
+
 
 args = commandArgs(trailingOnly=TRUE)
 

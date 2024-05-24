@@ -1,6 +1,11 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-10
 
+# This script extracts monthly climate data from T and P rasters, using the catchment polygons.
+# 
 # It is necessary to download the climate data from:
-# https://ftp.maps.canada.ca/pub/nrcan_rncan/Climate-archives_Archives-climatologiques/NAM_monthly/monthly_by_year/
+# https://ftp.maps.canada.ca/pub/nrcan_rncan/Climate-archives_Archives-climatologiques/daily/
 # These are not included in the repository due to size limitations (~260 GB)
 # The script will take a few hours to run
 

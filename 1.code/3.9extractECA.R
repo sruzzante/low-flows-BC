@@ -1,3 +1,15 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+
+# This script calculates the equivalent clearcut area for each year and for each catchment
+# Note that it was run as a parallel array job so it accepts and argument that is the year to be processed
+# Note that the forest age rasters are generated in the following scripts:
+# ./forestry.Analyis/createCutBlockRaster.rast
+# ./forestry.Analysis/createFirePerimRasters.rast
+# ./forestry.Analysis/calcForestAge.R
+
 
 args = commandArgs(trailingOnly=TRUE)
 

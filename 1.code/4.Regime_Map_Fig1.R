@@ -1,4 +1,8 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
 
+# This script creates Figure 1 in the manuscript (regime classification map)
 
 closeAllConnections()
 rm(list=ls())

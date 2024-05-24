@@ -1,3 +1,15 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-10
+
+# This script performs a number of tasks:
+# prepare the streamflow data and save it to an RDS file
+# filter to stations with enough data (20 years of summer data, at least one winter)
+# calculate glacial percentage
+# remove intermittent streams
+# remove catchments with >20% urban land
+# generate example hydrographs for two stations
+
 
 closeAllConnections()
 rm(list=ls())

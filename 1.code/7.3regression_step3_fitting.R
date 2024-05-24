@@ -1,3 +1,12 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+
+# This script fits the best regression model (found in 7.1regression_step1_optimization.R
+# to the full time series for each station. It saves the models (including the fitting data) to
+# 2.data/2.working/RegressionOptimization/BestModels/step2_lm_XXXXXXX.rds" where XXXXXXX is the station ID
+
 
 library(dplyr)
 

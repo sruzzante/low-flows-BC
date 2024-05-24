@@ -1,4 +1,9 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
 
+
+# This script combines the surface and groundater use estimates, and creates plots for each catchment
 
 licenses<-st_read("2.data/2.working/WaterUse/LicensedUse.gpkg")
 wells<-st_read("2.data/2.working/WaterUse/UnlicensedWellsUse.gpkg")

@@ -1,3 +1,14 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-10
+
+
+# This script extracts daily climate data from T and P rasters, using the catchment polygons.
+# https://data.pacificclimate.org/portal/gridded_observations/map/
+# These are not included in the repository due to size limitations 
+# The script will take a few hours to run
+
+
 
 closeAllConnections()
 rm(list=ls())

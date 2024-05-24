@@ -1,3 +1,11 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+
+# This script estimates surface water use for each catchment, using BC water license data (https://catalogue.data.gov.bc.ca/dataset/water-rights-licences-public)
+# Method is described in Appendix B
+
 
 closeAllConnections()
 rm(list=ls())

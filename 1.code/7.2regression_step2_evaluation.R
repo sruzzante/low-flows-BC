@@ -1,3 +1,11 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+
+# This script evaluates the 'best' regression models chosen in the script 7.1regression_step1_optimization.R
+# It runs a 10 x 5-fold cross-validation.
+# It saves the performance data to 2.data/2.working/stationMetadata/stations_performance.csv
 
 library(dplyr)
 

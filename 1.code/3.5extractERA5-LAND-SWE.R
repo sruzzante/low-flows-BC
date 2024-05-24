@@ -1,3 +1,12 @@
+# Author: Sacha Ruzzante
+# sachawruzzante@gmail.com
+# Last Update: 2024-05-24
+
+
+# This script extracts daily and monthly SWE data from ERA5-Land datasets 
+# available at https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land?tab=overview 
+# and https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land-monthly-means?tab=overview
+
 
 closeAllConnections()
 rm(list=ls())
