@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-09-13
 
 
 # This script extracts daily and monthly SWE data from ERA5-Land datasets 
@@ -55,7 +55,8 @@ write.csv(data_SWE,"2.data/2.working/SWE_data_by_catchment.csv",row.names = FALS
 # First save all rasters to one tif
 
 SNOW_SWE_grid<-terra::rast(list.files("2.data/1.original/ERA5_LAND_SWE/Daily/",full.names = TRUE,pattern = ".grib"))
-dts<-time(SNOW_SWE_grid)%>%
+SNOW_SWE_grid<-terra::rast(list.files("2.data/1.original/ERA5_LAND_SWE/Daily/",full.names = TRUE,pattern = "07-10.grib"))
+dts<-terra::time(SNOW_SWE_grid)%>%
   as.Date()
 
 dts_need<-ymd("1950-01-01"):ymd("2022-12:31")%>%
@@ -70,11 +71,11 @@ dts<-time(SNOW_SWE_grid)%>%
 
 names(SNOW_SWE_grid)<-dts
 
-SNOW_SWE_grid1000<-SNOW_SWE_grid*1000
+# SNOW_SWE_grid1000<-SNOW_SWE_grid*1000
 
 
 watersheds_SWE<-terra::extract(SNOW_SWE_grid,watersheds%>%
-                                 vect()%>%
+                                 # vect()%>%
                                  project(crs(SNOW_SWE_grid)),
                                fun = mean,
                                exact= TRUE,
@@ -83,13 +84,23 @@ watersheds_SWE<-terra::extract(SNOW_SWE_grid,watersheds%>%
                                na.rm = TRUE)
 
 
-watersheds_SWE$ID<-watersheds$StationNum
+watersheds_SWE$ID<-watersheds$ID
 
 names(watersheds_SWE)<-c("ID",time(SNOW_SWE_grid)%>%as.character())
 
 data_SWE_dly<-melt(watersheds_SWE,id.vars = "ID")
 
-write.csv(data_SWE_dly,"2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.csv",row.names = FALSE)
-save(data_SWE_dly,file = "2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.gz",compress = "gzip")
+# write.csv(data_SWE_dly,"2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.csv",row.names = FALSE)
+# save(data_SWE_dly,file = "2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.gz",compress = "gzip")
 
-load("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.gz")
+
+
+saveRDS(data_SWE_dly,"2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")
+# readRDS("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")
+
+duplicated(x[,1:2])%>%sum()
+
+x<-x[!duplicated(x[,1:2]),]
+nrow(x)/230
+
+saveRDS(x,"2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")

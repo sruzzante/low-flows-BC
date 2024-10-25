@@ -1,7 +1,7 @@
 
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-10-01
 
 
 # This script evaluates residual autocorrelation in the regression models
@@ -33,13 +33,13 @@ getMode <- function(v) {
 }
 setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-BC/")) #Set the working directory
 
-stations<-readRDS("2.data/2.working/StationMetadata/stations_final_2.RDS")
+stations<-readRDS("2.data/2.working/StationMetadata/stations_final.RDS")
 
-streamDataMonthly<-readRDS("2.data/2.working/Discharge/streamDataMonthly_2.RDS")
+streamDataMonthly<-readRDS("2.data/2.working/Discharge/streamDataMonthly.RDS")
 Div<-readRDS("2.data/2.working/WaterUse/estimates_all.RDS")
 streamDataMonthly<-left_join(streamDataMonthly,Div[,c("ID","year","Total.cms")])
 
-WeatherData<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataMonthly_2.RDS")
+WeatherData<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataMonthly.RDS")
 
 autoCorr<-function(dataYearly2){
   dat<-data.frame(WaterYear = seq(min(dataYearly2$WaterYear),max(dataYearly2$WaterYear)))
@@ -234,20 +234,23 @@ for(it_stn in 1:length(stations$ID)){
   tictoc::toc()
   print(sprintf("Done %d catchments",it_stn))
 }
-
-BG_result<-left_join(BG_result,stations[,c("ID","regime")])
+BG_result<-BG_result%>%select(!regime)
+BG_result<-left_join(BG_result,stations[,c("ID","regime","minSumFlowMonth")])
 sum(BG_result$BG.Test>BG_result$BG.Test.crit)/nrow(BG_result)
+sum((BG_result$BG.Test>BG_result$BG.Test.crit)[BG_result$Month==BG_result$minSumFlowMonth])/nrow(BG_result[BG_result$Month==BG_result$minSumFlowMonth,])
 
-BG_result%>%group_by(regime)%>%
-  summarize(frac = mean(BG.Test>BG.Test.crit),
+BG_result%>%
+  filter(Month==minSumFlowMonth)%>%
+  group_by(regime)%>%
+  dplyr::summarize(frac = mean(BG.Test>BG.Test.crit),
             bt = binom.test(x=sum(BG.Test>BG.Test.crit),n(),p=0.05,alternative = "greater")$p.value)
 
 
 write.csv(BG_result,"4.output/stations_autocorrelation.csv",row.names = FALSE)
-
+BG_result<-read.csv("4.output/stations_autocorrelation.csv")
 BG_result2<-BG_result%>%
   group_by(ID)%>%
-  summarize(numSignif = sum(BG.Test>BG.Test.crit)/n())
+  dplyr::summarize(numSignif = sum(BG.Test>BG.Test.crit)/n())
 watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final_2.gpkg")
 watersheds<-left_join(watersheds,BG_result2)
 
@@ -321,15 +324,16 @@ for(it_stn in 1:length(stations$ID)){
 stationarity_result<-left_join(stationarity_result,stations[,c("ID","regime")])
 stationarity_result%>%
   # group_by(regime)%>%
-  summarize(n=n(),
+  dplyr::summarize(n=n(),
             frac = mean(MK.p<0.05),
             bt = binom.test(x=sum(MK.p<0.05),n(),p=0.05,alternative = "greater")$p.value,
             fracNeg = sum(sen.slope<0)/n(),
             bt.Neg = binom.test(sum(sen.slope<0),n(),p=0.5)$p.value
   )
+
 stationarity_result%>%
   group_by(regime)%>%
-  summarize(n=n(),
+  dplyr::summarize(n=n(),
             frac = sum(MK.p<0.05)/n(),
             bt = binom.test(x=sum(MK.p<0.05),n(),p=0.05,alternative = "greater")$p.value,
             fracNeg = sum(sen.slope<0)/n(),
@@ -469,7 +473,7 @@ for(it_stn in 1:length(stations$ID)){
 
 stationarity%>%
   group_by(regime)%>%
-  summarize(frac = mean(MK.p<0.05),
+  dplyr::summarize(frac = mean(MK.p<0.05),
             bt = binom.test(x=sum(MK.p<0.05),n(),p=0.05,alternative = "greater")$p.value,
             fracNeg = sum(sen.slope<0)/n(),
             bt.Neg = binom.test(sum(sen.slope<0),n(),p=0.5)$p.value,
@@ -478,7 +482,7 @@ stationarity%>%
 
 stationarity%>%
   # group_by(regime)%>%
-  summarize(frac = mean(MK.p<0.05),
+  dplyr::summarize(frac = mean(MK.p<0.05),
             bt = binom.test(x=sum(MK.p<0.05),n(),p=0.05,alternative = "greater")$p.value,
             fracNeg = sum(sen.slope<0)/n(),
             bt.Neg = binom.test(sum(sen.slope<0),n(),p=0.5)$p.value

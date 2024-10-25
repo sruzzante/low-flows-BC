@@ -8,6 +8,8 @@ setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria./DAT
 
 firePerims<-st_read("lulc1_Fire_perimeters/PROT_HISTORICAL_FIRE_POLYS_SP/H_FIRE_PLY_polygon.shp")
 firePerims<-firePerims%>%filter(FIRE_YEAR>1976)
+
+
 firePerims_ls<-split(firePerims,firePerims$FIRE_YEAR)
 
 

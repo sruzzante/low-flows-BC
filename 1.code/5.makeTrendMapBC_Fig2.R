@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-10-01
 
 # This script runs the trend analysis and creates figure 2 in the manuscript
 
@@ -94,6 +94,7 @@ lmFun<-function(minFlow,year){
 # streamDataYrly$
 
 stns<-streamDataYrly%>%
+  # filter(year>=1993)%>%
   group_by(ID)%>%
   dplyr::summarise(strtYr = min(year[!is.na(minSumFlow7)]),
                    endYr = max(year[!is.na(minSumFlow7)]),
@@ -204,7 +205,7 @@ stns%>%
   dplyr::summarize(negSlope = sum(slope_sen<0),
                    sigNegSlope = sum(slope_sen<0&MK.p<0.05),
                    posSlope = sum(slope_sen>=0),
-                   sigPosSlope = sum(slope_sen>0&MK.p<0.05),
+                   sigPosSlope = sum(slope_sen>0&MK.p<0.05,na.rm = TRUE),
                    n=sum(!is.na(slope_sen)))
 
 
@@ -449,7 +450,7 @@ createPanelPlot_trend<-function(bc,plot_sf,varName,p_varName,labName,include.leg
     
     theme(legend.position = c(0.85,0.65),
           plot.title = element_text(hjust = 0,vjust=-20),
-          legend.title = element_markdown(face = "bold",hjust = 0.5,size = 6,angle = 90),
+          # legend.title = element_markdown(face = "bold",hjust = 0.5,size = 6,angle = 90),
           
           legend.background = element_rect(fill = "white",colour = "grey50"),
           legend.margin=ggplot2::margin(t = 2,r = 2,b = 2,l = 2,unit = "pt"),
@@ -520,8 +521,9 @@ createPanelPlot_trend<-function(bc,plot_sf,varName,p_varName,labName,include.leg
   p1
 }
 
-p1<-createPanelPlot_trend(bc,plot_sf,"slope_sen","MK.p","",include.legend = TRUE,include.inset = TRUE)
-ggsave("3.Figures/TrendMaps_overall_MK.png",bg = "white",dpi =600,p1,width = 7.5/2,height = 9.67/3)
+p1<-createPanelPlot_trend(bc,plot_sf,"slope_sen","MK.p","",include.legend = FALSE,include.inset = TRUE)
+ggsave("3.Figures/TrendMaps_overall_MK2.png",bg = "white",dpi =600,p1,width = 7.5/2,height = 9.67/3)
+
 p1<-createPanelPlot_trend(bc,plot_sf,"slope_sen","MK.p","",include.legend = FALSE,include.inset = FALSE)
 ggsave("3.Figures/TrendMaps_overall_MK.svg",bg = "white",dpi =600,p1,width = 7.5/2,height = 9.67/3,
        device = "svg")

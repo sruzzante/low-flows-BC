@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-10-04
 
 # This script creates Figure 1 in the manuscript (regime classification map)
 
@@ -29,11 +29,11 @@ bc <- (bc_neighbours()) #Get shp of BC bounds
 bc <- bc[which(bc$name == "British Columbia" ),] #Extract just the BC province
 # First open all files in notepad++ and remove all zero-width no-break spaces
 
-stations<-readRDS("2.data/2.working/StationMetadata/stations_final_2.RDS")
+stations<-readRDS("2.data/2.working/StationMetadata/stations_final.RDS")
 # stations_reg<-read.csv("2.data/2.working/StationMetadata/Stations_regimeClass.csv",fileEncoding = "UTF-8")
 stations$minFlowDate<-as.Date(stations$minFlowDate,origin = "1970-01-01")
 ## Regime Classification
-watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final_2.gpkg")%>%
+watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final.gpkg")%>%
   st_transform("EPSG:3005")
 
 watersheds<-inner_join(watersheds,stations[,c("ID","regime","minFlowDate","Lat","Lon","Area_km2")],by = c("ID"))
@@ -137,10 +137,10 @@ p2<-ggplot()+
   scale_y_continuous(expand = c(0,0),limits = c(362537.4,1750251.6))+
   scale_fill_manual(
     # palette = colorRampPalette(colors = c("#FCF4D9","#00B9D2","#005804"))(n) ,
-    values = c("#005804","#599D7A","#B2E3F0","#FCF4D9"),
+    values = c("#DF9C41","#599D7A","#B2E3F0","#FCF4D9"),
     name = "regime",
     breaks = c("Rainfall","Hybrid","Snowfall","Glacial"),
-    labels= c("Rainfall (34)","Hybrid (111)","Snowmelt (48)","Glacial (37)"),
+    labels= c("Rainfall (28)","Hybrid (79)","Snowmelt (89)","Glacial (34)"),
   )+
   # scale_fill_scico_d(
   #   palette = "navia",
@@ -172,7 +172,7 @@ ggsave("3.Figures/maps/flowRegimes.svg",p2,width = 3.75,height = 3.225,
 
 # make 4 inset graphs for flow regime map
 
-streamDataAll<-readRDS("2.data/2.working/Discharge/streamDataFinal_2.rds")
+streamDataAll<-readRDS("2.data/2.working/Discharge/streamDataFinal.rds")
 
 m_labels<-c("J","F","M","A","M","J","J","A","S","O","N","D")
 
@@ -197,12 +197,13 @@ for(it_stn in 1:length(stnsPlot)){
   # streamData$Discharge7[streamData$Discharge7==0]
   
   # stat_smooth(data = streamData, x = streamData$DateFake,y = streamData$Discharge)
+  streamData$Discharge_norm<-streamData$Discharge/(stations$Area_km2[stations$ID==stnsPlot[it_stn]]*10^3)*86400
   
-  streamData$Discharge30<-zoo::rollmean(streamData$Discharge,k = 30,fill = NA,align = "right")
+  streamData$Discharge30<-zoo::rollmean(streamData$Discharge_norm,k = 30,fill = NA,align = "right")
   
   
   dataSmooth2<-streamData%>%group_by(DateFake,ID)%>%
-    dplyr::summarize(Discharge = mean(Discharge30,na.rm = TRUE))
+    dplyr::summarize(Discharge_norm = mean(Discharge30,na.rm = TRUE))
   streamData$YR<-streamData$year%>%as.factor()
   streamData_x<-rbind(streamData_x,streamData)
   
@@ -217,7 +218,7 @@ dataSmooth2_x$regimeLbl<-factor(dataSmooth2_x$ID,
                                levels = c("08HA010","08NH006","08JE001","09AA006"),
                                labels = c("A (Rainfall)","B (Hybrid)","C (Snowmelt)","D (Glacial)"))
 
-p1<-ggplot(streamData_x,aes(x = DateFake,y = Discharge))+
+p1<-ggplot(streamData_x,aes(x = DateFake,y = Discharge_norm))+
   geom_line(linewidth= 0.15,col = "gray50",alpha = 0.2,aes(group = YR))+
   # geom_smooth(span= 0.25)+
   geom_line(data = dataSmooth2_x,aes(col = "Average Q30"),linewidth = 0.3)+
@@ -232,7 +233,7 @@ p1<-ggplot(streamData_x,aes(x = DateFake,y = Discharge))+
                
                # breaks  = seq(from=as.Date("1999-01-01"),to=as.Date("2000-01-01"),by="month"),
                labels = dte_formatter)+
-  scale_y_log10(name = expression(Q~(m^3*s^-1)))+
+  scale_y_log10(name = expression(Q~(mm/day)))+
   
   theme_bw()+
   theme(legend.position = "none",
@@ -256,6 +257,6 @@ p1<-ggplot(streamData_x,aes(x = DateFake,y = Discharge))+
              scales = "free_y",
              strip.position = "right",
              )
-# p1
-ggsave("3.Figures/maps/flowRegimes_4panels.svg",width = 1.75,height = 3.225,device = "svg")
+p1
+ggsave("3.Figures/maps/flowRegimes_4panels.svg",width = 1.75,height = 3.2,device = "svg")
 

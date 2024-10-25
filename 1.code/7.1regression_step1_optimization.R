@@ -5,7 +5,7 @@
 
 # This script optimizes the regressions using 10 x 5-fold cross-validation with all subsets of variables.
 # It saves the best model to a file named step1_XXXXXXX_.rds, where XXXXXXX is the station ID
-
+# the script takes a while and was run on a high performance cluster
 
 args = commandArgs(trailingOnly=TRUE)
 

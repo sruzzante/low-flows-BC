@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-10
+# Last Update: 2024-10-07
 
 
 # This script performs the stationarity analysis presented in Section 3.2.2
@@ -26,32 +26,32 @@ library(tictoc)
 setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-BC/")) #Set the working directory
 
 # Load streamflow data
-streamDataAll<-readRDS("2.data/2.working/Discharge/streamDataFinal_2.rds")
+streamDataAll<-readRDS("2.data/2.working/Discharge/streamDataFinal.rds")
 # streamDataMonthly<-readRDS("2.data/2.working/Discharge/streamDataMonthly_2.RDS")
 
 # Load Station metadata
 # stations<-read.csv("2.data/2.working/StationMetadata/stations_final.csv",fileEncoding = "UTF-8-BOM")
-stations<-readRDS("2.data/2.working/StationMetadata/stations_final_2.RDS")
+stations<-readRDS("2.data/2.working/StationMetadata/stations_final.RDS")
 
 # Load catchment polygons
-watersheds <- st_read("2.data/2.working/CatchmentPolygons/watersheds_final_2.gpkg")
+watersheds <- st_read("2.data/2.working/CatchmentPolygons/watersheds_final.gpkg")
 
 # Load monthly weather data
 # WeatherData<-read.csv("2.data/2.working/WeatherDataANUSPLIN/dataMonthly.csv")%>%
 #   filter(StationNum%in%unique(streamDataAll$ID))
-WeatherData<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataMonthly_2.RDS")
+WeatherData<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataMonthly.RDS")
 
 # Load daily weather data
 WeatherDataDaily<-readRDS("2.data/2.working/WeatherDataANUSPLIN/dataDaily.RDS")
 
 
-streamDataAll<-left_join(streamDataAll,WeatherDataDaily[,-which(names(WeatherDataDaily)=="Date")])
+streamDataAll<-left_join(streamDataAll,WeatherDataDaily)
 
 
 #Load monthly SWE data
 data_SWE<-readRDS("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment.RDS")
 #Load daily SWE data
-data_SWE_dly<-read.csv("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")
+data_SWE_dly<-readRDS("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")
 
 
 names(data_SWE_dly)<-c("ID","Date","SWE")
@@ -588,5 +588,5 @@ testTable.df
 #                      rownames = FALSE
 # )
 
-write.csv(testTable.df,"4.output/stationarity_test_1997.csv")
+write.csv(testTable.df,sprintf("4.output/stationarity_test_%d.csv",splitYr))
 

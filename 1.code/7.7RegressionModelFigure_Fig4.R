@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-10-19
 
 
 # This script creates Figure 4 in the manuscript. 
@@ -182,4 +182,6 @@ ggplot(shift_summary,aes(x = lag,y = qnts50*100,ymin = qnts10*100,ymax = qnts90*
         panel.grid.minor = element_blank())
 
 ggsave("3.figures/RegressionModelPT.png",width = 6,height = 3)
+
+ggsave("3.figures/RegressionModelPT.svg",width = 6,height = 3)
 

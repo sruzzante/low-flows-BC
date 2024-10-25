@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-10-08
 
 
 # This script reruns the model fitting procedure using the PWNAmet data, and compares the performance to PCIC's VIC-GL models 
@@ -22,9 +22,9 @@ library(scico)
 library(hydroGOF)
 setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-BC/")) #Set the working directory
 
-stations<-readRDS("2.data/2.working/StationMetadata/stations_final_2.RDS")
+stations<-readRDS("2.data/2.working/StationMetadata/stations_final.RDS")
 
-streamDataMonthly<-readRDS("2.data/2.working/Discharge/streamDataMonthly_2.RDS")
+streamDataMonthly<-readRDS("2.data/2.working/Discharge/streamDataMonthly.RDS")
 Div<-readRDS("2.data/2.working/WaterUse/estimates_all.RDS")
 streamDataMonthly<-left_join(streamDataMonthly,Div[,c("ID","year","Total.cms")])
 
@@ -33,7 +33,8 @@ pcic_models<-list.files("2.data/1.original/PCIC_station_hydro_model_out/",patter
 pcic_models[!(tolower(pcic_models)%in%tolower(stations$Station.Name))]
 pcic_models<-pcic_models[tolower(pcic_models)%in%tolower(stations$Station.Name)]
 
-stations<-stations[stations$Station.Name%in%pcic_models,]
+stations<-stations[stations$Station.Name%in%pcic_models,]%>%
+  filter(!ID=="08ME028")
 
 
 
@@ -46,7 +47,7 @@ GoF_PCIC_all <- data.frame()
 
 GoF_log_PCIC_all<- data.frame()
 GoF_sqrt_PCIC_all<- data.frame()
-for(it in 1:56){
+for(it in 1:55){
   
   streamData_x = streamDataMonthly%>%filter(ID %in% stations$ID[it])
   
@@ -92,7 +93,7 @@ for(it in 1:56){
   # ggplot(data,aes(minSumFlow.x,minSumFlow.y))+geom_point()
   
   data<-filter(data,!is.na(data$minSumFlow.x))
-  GoF_PCIC$R2[it]<-cor(log(data$minSumFlow.x),log(data$minSumFlow.y),use = "complete")^2
+  GoF_PCIC$R2[it]<-hydroGOF::R2(log(data$minSumFlow.x),log(data$minSumFlow.y),use = "complete")
   
   
   GoF_PCIC$RMSE[it]<-(data$minSumFlow.x-data$minSumFlow.y)^2%>%
@@ -139,9 +140,10 @@ for(it in 1:56){
 
 write.csv(GoF_PCIC,"4.output/GoF_PCIC.csv")
 
+GoF_PCIC<-read.csv("4.output/GoF_PCIC.csv")
 
-
-GoF_Regression<-stations[,c("ID","Station.Name","regime")]
+GoF_Regression<-stations[,c("ID","Station.Name","regime")]%>%
+  filter(!ID=="08ME028")
 GoF_Regression_all<-data.frame()
 GoF_sqrt_Regression_all<-data.frame()
 GoF_log_Regression_all<-data.frame()
@@ -150,8 +152,8 @@ for(it_stn in 1:length(stations$ID)){
   streamData_x = streamDataMonthly%>%filter(ID %in% station_x$ID)
   data_x = WeatherData%>%filter(ID %in% station_x$ID)
   
-  
-  MonBestModel<-readRDS(paste0("2.data/2.working/RegressionOptimization/BestModels/step2_lm_",station_x$ID,".rds"))
+  # if(!file.exists(paste0("2.data/2.working/RegressionOptimization/BestModels/PNWNAmet/step2_lm_",station_x$ID,".rds"))){next}
+  MonBestModel<-readRDS(paste0("2.data/2.working/RegressionOptimization/BestModels/PNWNAmet/step2_lm_",station_x$ID,".rds"))
   
   # MonModels_KGEs<-readRDS(paste0("2.data/2.working/RegressionOptimization/catchment_KGEs/step1_",station_x$ID,".rds"))
   
@@ -223,7 +225,7 @@ for(it_stn in 1:length(stations$ID)){
     
     
     dataYearly2<-left_join(dataYearly,streamDataYrly,by = c("WaterYear"= "year"))
-    dataYearly2<-dataYearly2[dataYearly2$WaterYear<2012,]
+    dataYearly2<-dataYearly2[dataYearly2$WaterYear<=2012,]
     
     
     
@@ -331,14 +333,14 @@ ggplot(PCIC_compare,aes(NSE_log.reg,NSE_log.VIC,color = regime))+geom_point()+ge
 
 
 
-sum(PCIC_compare$KGE.reg>PCIC_compare$KGE.VIC) # KGE is better in 53/56 catchments
-sum(PCIC_compare$KGE_sqrt.reg>PCIC_compare$KGE_sqrt.VIC) # KGE_sqrt is better in 50/56 catchments
+sum(PCIC_compare$KGE.reg>PCIC_compare$KGE.VIC) # KGE is better in 53/55 catchments
+sum(PCIC_compare$KGE_sqrt.reg>PCIC_compare$KGE_sqrt.VIC) # KGE_sqrt is better in 53/55 catchments
 
-sum(PCIC_compare$NSE.reg>PCIC_compare$NSE.VIC) #NSE is better in 55/56 catchments
-sum(PCIC_compare$NSE_log.reg>PCIC_compare$NSE_log.VIC) #NSE_log is better in 55/56 catchments
+sum(PCIC_compare$NSE.reg>PCIC_compare$NSE.VIC) #NSE is better in 54/55 catchments
+sum(PCIC_compare$NSE_log.reg>PCIC_compare$NSE_log.VIC) #NSE_log is better in 55/55 catchments
 
-sum(abs(PCIC_compare$pbias.reg)<abs(PCIC_compare$pbias.VIC)) #PBIAS is better in 52/56 catchments
-sum(PCIC_compare$RMSE.reg<PCIC_compare$RMSE.VIC) #RMSE is smaller in 55/56 catchments
+sum(abs(PCIC_compare$pbias.reg)<abs(PCIC_compare$pbias.VIC)) #PBIAS is better in 53/55 catchments
+sum(PCIC_compare$RMSE.reg<PCIC_compare$RMSE.VIC) #RMSE is smaller in 55/55 catchments
 
 
 
@@ -370,7 +372,7 @@ summaryTable<-PCIC_compare%>%
   
   dplyr::select(Station.Name,ID,regime,KGE.reg:pbias.reg,KGE_sqrt.VIC:pbias.VIC)%>%
   # group_by(regime)%>%
-  summarise(across(c(KGE.reg:pbias.reg,KGE_sqrt.VIC:pbias.VIC),~summarizeFunc(.x)))%>%
+  dplyr::summarise(across(c(KGE.reg:pbias.reg,KGE_sqrt.VIC:pbias.VIC),~summarizeFunc(.x)))%>%
   # melt(id.vars = "regime")
   reshape2::melt(id.vars = NULL)
 
@@ -382,7 +384,7 @@ summaryTable2<-summaryTable%>%
   tidyr::pivot_wider(id_cols = c(stat),
                      names_from = model,
                      values_from = value)
-
+summaryTable2
 summary(PCIC_compare$regime)
 
 funcBetter = function(name,fracGreater){
@@ -397,7 +399,8 @@ funcBetter = function(name,fracGreater){
 
 # untransformed
 x1<-rbind(GoF_Regression_all%>%mutate(model = "reg"),
-         GoF_PCIC_all%>%mutate(model = "VIC"))%>%
+         GoF_PCIC_all%>%mutate(model = "VIC")%>%
+           filter(ID%in%GoF_log_Regression_all$ID))%>%
   mutate(PBIAS..=abs(PBIAS..),
          pbiasFDC..=abs(pbiasFDC..),
          rSD=abs(log(rSD)),
@@ -417,7 +420,8 @@ mean(x1$fracBetter)
 
 # sqrt
 x2<-rbind(GoF_sqrt_Regression_all%>%mutate(model = "reg"),
-      GoF_sqrt_PCIC_all%>%mutate(model = "VIC"))%>%
+      GoF_sqrt_PCIC_all%>%mutate(model = "VIC")%>%
+        filter(ID%in%GoF_log_Regression_all$ID))%>%
   mutate(PBIAS..=abs(PBIAS..),
          pbiasFDC..=abs(pbiasFDC..),
          rSD=abs(log(rSD)),
@@ -438,7 +442,8 @@ mean(x2$fracBetter)
 
 ## log
 x3<-rbind(GoF_log_Regression_all%>%mutate(model = "reg"),
-      GoF_log_PCIC_all%>%mutate(model = "VIC"))%>%
+      GoF_log_PCIC_all%>%mutate(model = "VIC")%>%
+        filter(ID%in%GoF_log_Regression_all$ID))%>%
   mutate(PBIAS..=abs(PBIAS..),
          pbiasFDC..=abs(pbiasFDC..),
          rSD=abs(log(rSD)),
@@ -456,7 +461,9 @@ x3<-rbind(GoF_log_Regression_all%>%mutate(model = "reg"),
   dplyr::mutate(fracBetter = funcBetter(name,fracGreater))%>%print(n=100)
 mean(x3$fracBetter)
 
-rbind(x1,x2,x3)%>%summarize(mean(fracBetter))
+rbind(x1,x2,x3)%>%dplyr::summarize(mean(fracBetter),
+                                   min(fracBetter
+                                       ))
 # PBIASfdc can't really be calculated
 
 dplyr::summarise(across(ME:pbiasFDC..,function(x,model){x[model=="reg"]>x[model=="VIC"]}))

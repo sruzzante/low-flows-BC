@@ -3,7 +3,7 @@ Analysis of low flows and streamflow drought in British Columbia, Canada. Histor
 
 
 There are four folders:
-1.code: All R codes used for the analysis in Ruzzante and Gleeson (submitted 2024)
+1.code: All R codes used for the analysis in Ruzzante and Gleeson (submitted 2024):
 
 	1.prepareCatchmentPolygons.R: merge and save the catchment polygons
 	2.prepareData.R: extract and save the hydrometric (streamgauge) data

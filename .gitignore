@@ -17,3 +17,7 @@ Watersheds_natural_BC.gpkg
 *UnlicensedWellsUse.gpkg
 /5.oldCodes
 /6.ClimateChangeProjections
+2.data/2.working/GlacierRasters/glacier1984.gpkg
+2.data/2.working/GlacierRasters/glacier2009.gpkg
+/2.data/2.working/GlacierRasters
+2.data/2.working/WeatherDataPWNAmet/dataDaily.RDS

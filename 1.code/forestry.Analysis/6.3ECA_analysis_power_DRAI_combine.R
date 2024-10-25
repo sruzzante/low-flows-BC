@@ -50,7 +50,7 @@ ggplot(ECA_pwr,aes(x = (fctrs+1),y = value,col = regime,linetype = hypo))+
                 minor_breaks = NULL
   )+
   scale_y_continuous(name = "Type II Error Rate")+
-  scale_color_manual(values = c("#005804","#599D7A","#B2E3F0","#F6DE92"),
+  scale_color_manual(values = c("#DF9C41","#599D7A","#B2E3F0","#F6DE92"),
                      name = "Regime")+
   scale_linetype(name = "Hypothesis")+
   scale_shape(name = "Hypothesis")+

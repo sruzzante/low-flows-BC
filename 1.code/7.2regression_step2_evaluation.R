@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-09-30
 
 
 # This script evaluates the 'best' regression models chosen in the script 7.1regression_step1_optimization.R
@@ -14,14 +14,14 @@ library(MuMIn)
 library(hydroGOF)
 
 #setwd(getSrcDirectory(function(){})[1])
-# setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-WNA/")) #Set the working directory
+setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-BC/")) #Set the working directory
 # setwd("projects/def-tgleeson/ruzzante/low-flows-WNA/regressionOptimization_1/")
 
 
-streamDataMonthly<-readRDS("../2.data/2.working/Discharge/streamDataMonthly_2.RDS")
-stations<-readRDS("../2.data/2.working/stationMetadata/stations_final_2.RDS")
-WeatherData<-readRDS("../2.data/2.working/WeatherDataANUSPLIN/dataMonthly_2.RDS")
-Div<-readRDS("../2.data/2.working/WaterUse/estimates_all.RDS")
+streamDataMonthly<-readRDS("./2.data/2.working/Discharge/streamDataMonthly.RDS")
+stations<-readRDS("./2.data/2.working/stationMetadata/stations_final.RDS")
+WeatherData<-readRDS("./2.data/2.working/WeatherDataANUSPLIN/dataMonthly.RDS")
+Div<-readRDS("./2.data/2.working/WaterUse/estimates_all.RDS")
 
 streamDataMonthly<-left_join(streamDataMonthly,Div[,c("ID","year","Total.cms")])
 
@@ -89,7 +89,7 @@ for(it in 1:nrow(stations)){
   
   print("here-1")
   # MonBestModel<-list()
-  MonBestModel<-readRDS(paste0("../2.data/2.working/RegressionOptimization/BestModels/step1_",station_x$ID,".rds"))
+  MonBestModel<-readRDS(paste0("./2.data/2.working/RegressionOptimization/BestModels/step1_",station_x$ID,".rds"))
   
   # MonModels_KGEs<-readRDS(paste0("2.data/2.working/RegressionOptimization/catchment_KGEs/step1_",station_x$ID,".rds"))
   
@@ -258,7 +258,7 @@ for(it in 1:nrow(stations)){
   
   data_tested_meas_4<-data_tested_meas_3%>%
     group_by(WaterYear,seed)%>%
-    summarize(minMonFlow7 = min(minMonFlow7),
+    dplyr::summarize(minMonFlow7 = min(minMonFlow7),
               minMonFlow7.predict = min(predict),
               n_ = n())
   
@@ -269,7 +269,7 @@ for(it in 1:nrow(stations)){
       KGE_sqrt = KGE_func(sqrt(minMonFlow7.predict),sqrt(minMonFlow7)),
       NSE_ = NSE(minMonFlow7.predict,minMonFlow7),
       NSE_log = NSE(log(minMonFlow7.predict),log(minMonFlow7)),
-      R2 = (cor(minMonFlow7.predict,minMonFlow7))^2,
+      R2 = hydroGOF::R2(minMonFlow7.predict,minMonFlow7),
       pbias = hydroGOF::pbias(minMonFlow7.predict,minMonFlow7),
       RMSE = ((minMonFlow7.predict-minMonFlow7)^2)%>%
         mean()%>%
@@ -281,7 +281,7 @@ for(it in 1:nrow(stations)){
   stations$NSE[it]<-mean(perform_data$NSE_)
   stations$NSE.log[it]<-mean(perform_data$NSE_log)
   stations$R2[it]<-mean(perform_data$R2)
-  stations$RMSE[it]<-mean(perform_data$R2)
+  stations$RMSE[it]<-mean(perform_data$RMSE)
   stations$pbias[it]<-mean(perform_data$pbias)
   
   
@@ -289,6 +289,6 @@ for(it in 1:nrow(stations)){
   tictoc::toc()  # MonModels_KGEs
 }
 
-write.csv(stations,"../2.data/2.working/stationMetadata/stations_performance.csv",row.names = FALSE)
+write.csv(stations,"./2.data/2.working/stationMetadata/stations_performance.csv",row.names = FALSE)
 
 #

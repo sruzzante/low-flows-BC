@@ -40,7 +40,7 @@ ECA<-readRDS("2.data/2.working/ECA/ECA.rds")
 
 
 
-watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final_2.gpkg")%>%
+watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final.gpkg")%>%
   st_transform(st_crs("EPSG:3005"))
 
 
@@ -294,8 +294,8 @@ stnRs_long<-pivot_wider(stnRs_long,id_cols = c(ID,regime,Total.Cut.Area,Area_km2
 
 
 # stnRs_long<-filter(stnRs_long,!regime=="Glacial")
-stnRs_long$regime<-factor(stnRs_long$regime,levels = c("Rainfall","Hybrid","Snowfall"),
-                          labels = c("Rainfall","Hybrid","Snowmelt"))
+stnRs_long$regime<-factor(stnRs_long$regime,levels = c("Rainfall","Hybrid","Snowfall","Glacial"),
+                          labels = c("Rainfall","Hybrid","Snowmelt","Glacial"))
 stnRs_long$name<-factor(stnRs_long$name,levels = c("c0.60","c0.20","c0.10","c0.5"),
                         labels = c("ECA (60 year)",
                                    "ECA (20 year)",
@@ -306,7 +306,7 @@ stnRs_long$name<-factor(stnRs_long$name,levels = c("c0.60","c0.20","c0.10","c0.5
 
 ggplot(stnRs_long,aes(x = Total.Cut.Area,y = estimate))+geom_point(aes(color = p.val<0.05))+
   facet_wrap(facets = "regime",ncol = 1)+
-  geom_smooth(method = "lm",se = FALSE,aes(linetype = "best fit"),col = "black")+
+  geom_smooth(method = "lm",se = FALSE,aes(linetype = "best fit"),col = "black",formula=y~0+x)+
   geom_hline(yintercept = 0,col = "grey25")+
   facet_grid(rows = vars(regime),
              cols = vars(name))+
@@ -331,8 +331,8 @@ stnRs_long%>%
             H1.p.neg =  binom.test(sum(p.val<0.05&estimate<0),n(),p=0.05,alternative = "greater")$p.value,
             H2.perc =  round(sum(estimate>0)/n(),2)*100,
             H2.p =  binom.test(sum(estimate>0),n(),p=0.5,alternative = "two.sided")$p.value,
-            H3.b = summary(lm(estimate~Total.Cut.Area))$coefficients[2,1],
-            H3.p = summary(lm(estimate~Total.Cut.Area))$coefficients[2,4],
+            H3.b = summary(lm(estimate~Total.Cut.Area-1))$coefficients[1,1],
+            H3.p = summary(lm(estimate~Total.Cut.Area-1))$coefficients[1,4],
             n = n())%>%
   data.frame()%>%
   stargazer::stargazer(type = "html",
@@ -390,3 +390,4 @@ stnRs_long_lag1%>%
                    H3.b = summary(lm(estimate~Total.Cut.Area))$coefficients[2,1],
                    H3.p = summary(lm(estimate~Total.Cut.Area))$coefficients[2,4],
                    n = n())
+

@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-24
+# Last Update: 2024-10-19
 
 
 # This script hindcasts low flows, droughts, e-flow violations, and low flow anomalies from 1901-2022. It generates Figures 5 and 6 in the manuscript
@@ -65,7 +65,7 @@ DAT<-data.frame()
 tic.clear()
 stations$senSlope<-NA
 stations$MK.p<-NA
-it_stn = 79
+# it_stn = 79
 
 for(it_stn in 1:length(stations$ID)){
   tic(sprintf("Station %d",it_stn))
@@ -78,8 +78,14 @@ for(it_stn in 1:length(stations$ID)){
   MonBestModel<-readRDS(paste0("2.data/2.working/RegressionOptimization/BestModels/step2_lm_",stations$ID[it_stn],".rds"))
   
   month_bgn<-max(stations$minSumFlowMonth[it_stn]-1,stations$SDD[it_stn])
+  if(is.null(MonBestModel[[month_bgn]])){
+    month_bgn = month_bgn+1
+  }
   
   month_end<-min(stations$minSumFlowMonth[it_stn]+1,stations$SAD[it_stn])
+  if(length(MonBestModel)<month_end){
+    month_end = month_end-1
+  }
   
   # month_end<-min(month_end,length(MonBestModel))
   month_rng<-((month_bgn:month_end)-1)%%12+1
@@ -259,8 +265,16 @@ for(it_stn in 1:length(stations$ID)){
                     by = c("year" = "WaterYear"))
   
   mkTest<-modifiedmk::mmkh3lag((resids$minSumFlow-resids$predMin.m3s))
+
+  
   stations$senSlope[it_stn] <-mkTest[7]
   stations$MK.p[it_stn] <-mkTest[2]
+  
+  if(is.na(mkTest[[2]])){
+    print("For some reason the modifiedmk::mmkh3lag function is encountering an error - defaulting to uncorrected p-value")
+    stations$MK.p[it_stn] <-mkTest[5]
+    
+    }
   
   # naInds<-which(is.na(streamDataYrly$minSumFlow))
   # naInds<-naInds[!naInds%in%c(1,dim(streamDataYrly)[1])]
@@ -339,8 +353,8 @@ for(it_stn in 1:length(stations$ID)){
   }else{
     leg.y = 0.8
   }
-  
-  p1<-ggplot(streamDataYrly)+
+  if(FALSE){
+    p1<-ggplot(streamDataYrly)+
     # geom_line(aes(x = year,y = minSumFlow.10,colour = "measured",linetype = "measured"))+
     # geom_line(data = dat,aes(x = WaterYear,y = predMin.m3s.10,colour = "predicted",linetype = "predicted"))+
     
@@ -431,6 +445,8 @@ for(it_stn in 1:length(stations$ID)){
            width = 6,height = 4)
   }
   
+  }
+  
   
   
   toc()
@@ -444,7 +460,8 @@ stations%>%group_by(regime)%>%
                    percPosSigResidTrends = sum(senSlope>0&MK.p<0.05)/n(),
                    p2 = binom.test(sum(senSlope>0& MK.p<0.05), n(), p=0.05, alternative = "greater")$p.value,
                    percNegSigResidTrends = sum(senSlope<0&MK.p<0.05)/n(),
-                   p3 = binom.test(sum(senSlope<0& MK.p<0.05), n(), p=0.05, alternative = "greater")$p.value
+                   p3 = binom.test(sum(senSlope<0& MK.p<0.05), n(), p=0.05, alternative = "greater")$p.value,
+                   N=n()
   )
 
 stations%>%
@@ -473,16 +490,16 @@ DAT$regime<-factor(DAT$regime,levels = c("Rainfall","Hybrid","Snowfall","Glacial
                    labels =  c("Rainfall","Hybrid","Snowmelt","Glacial"))
 
 # If we want to use modelled data to produce drought levels
-# D_indics<-
-#   DAT%>%
-#   filter(WaterYear%in%c(1950:2022))%>%
-#   group_by(ID)%>%
-#   dplyr::summarise(D5=quantile(predMin.m3s,0.02),
-#                    D4=quantile(predMin.m3s,0.05),
-#                    D3=quantile(predMin.m3s,0.1)
-#   )
-# DAT<-DAT%>%select(!c(D5,D4,D3))%>%
-#   left_join(D_indics)
+D_indics<-
+  DAT%>%
+  filter(WaterYear%in%c(1950:2022))%>%
+  group_by(ID)%>%
+  dplyr::summarise(D5=quantile(predMin.m3s,0.02),
+                   D4=quantile(predMin.m3s,0.05),
+                   D3=quantile(predMin.m3s,0.1)
+  )
+DAT<-DAT%>%select(!c(D5,D4,D3))%>%
+  left_join(D_indics)
 
 
 
@@ -663,6 +680,10 @@ ggsave("3.Figures/ExceedPlot_hist.png",
        width = 6.5,height = 6,dpi = 600)
 
 
+ggsave("3.Figures/ExceedPlot_hist.svg",
+       width = 6.5,height = 6,dpi = 600)
+
+
 # What is causing the changes decade to decade?
 
 WeatherDataMean<-WeatherData%>%
@@ -671,9 +692,8 @@ WeatherDataMean<-WeatherData%>%
   dplyr::summarise(across(Mean.Temp..C.:Total.cms,~mean(.x)))
 
 WeatherDataDecadal<-WeatherData%>%
-  mutate(decade = floor(Year/1)*1)%>%
-  group_by(ID,decade,Month)%>%
-  dplyr::summarise(across(Mean.Temp..C.:Total.cms,~mean(.x)))
+  mutate(decade = Year)%>%
+  arrange(ID,decade,Month)
 
 WeatherDataDecadal<-left_join(WeatherDataDecadal,WeatherDataMean,by = c("ID","Month"),
                               suffix = c("","mn"))
@@ -974,6 +994,10 @@ for(it_stn in 1:230){
 RES$regime<-factor(RES$regime,levels = c("Rainfall","Hybrid","Snowfall","Glacial"),
                    labels =  c("Rainfall","Hybrid","Snowmelt","Glacial"))
 
+RES%>%
+  mutate(source = "ANUSPLIN")%>%
+  saveRDS("4.output/Q7minAnomaliesByStn_ANUSPLIN.RDS")
+
 
 deltas<-
   RES%>%
@@ -983,20 +1007,23 @@ deltas<-
   tidyr::pivot_wider(id_cols=c(year,regime),
                      values_from = delta_mn,
                      names_from =c(var))%>%
-  ungroup()%>%
-  mutate(overall = Precip_summer+Temp_summer+Precip_winter+Temp_winter+Abstraction)%>%
+  dplyr::ungroup()%>%
+  dplyr::mutate(overall = Precip_summer+Temp_summer+Precip_winter+Temp_winter+Abstraction)%>%
   # mutate(across(!year,~function(x){(exp(x)-1)}))%>%
   tidyr::pivot_wider(id_cols = year,
                      values_from = Abstraction:overall,
                      names_from = regime,
                      names_sep = "___")%>%
-  ungroup()%>%
-  mutate(across(!year,~RcppRoll::roll_meanr(.x,n = 10,na.rm = FALSE,fill = NA)))%>%
+  dplyr::ungroup()%>%
+   dplyr::mutate(across(!year,~RcppRoll::roll_meanr(.x,n = 10,na.rm = FALSE,fill = NA)))%>%
+  dplyr::reframe(across(year:overall___Glacial,~approx( .x, n=1211 )$y))%>%
+  filter(year>=1910)%>%
+ 
   # mutate(x = RcppRoll::roll_meanr(Precip_summer.Rainfall,n = 10,na.rm = FALSE,fill = NA))%>%
   tidyr::pivot_longer(cols = !year,
                       names_to = "var.regime",
                       values_to = "delta_mn")%>%
-  mutate(var = str_split_i(var.regime,"___",1),
+  dplyr::mutate(var = str_split_i(var.regime,"___",1),
          regime = str_split_i(var.regime,"___",2))
 
 deltas$var_fct<-factor(deltas$var,
@@ -1013,7 +1040,7 @@ brkFun<-function(x){
   
   
   if(max(abs(x2))>30){
-    x3.seq<-log(c(-40,-20,0,20)/100+1)
+    x3.seq<-log(c(-40,-20,0,20,40)/100+1)
   } else {
     x3.seq<-log(c(-20,-10,0,10,20)/100+1)
   } 
@@ -1073,8 +1100,11 @@ ggplot(deltas%>%filter(!var_fct=="overall"),aes(year,y = (delta_mn)))+
         legend.box.background =  element_rect(colour = "black"))
 
 ggsave("3.figures/Delta_historical.png",width = 6.5,height = 6,dpi = 600)
+ggsave("3.figures/Delta_historical.svg",width = 6.5,height = 6,dpi = 600)
 
 
+summary(RES$regime
+        )
 
 #not rolling mean
 
@@ -1086,19 +1116,19 @@ deltas<-
   tidyr::pivot_wider(id_cols=c(year,regime),
                      values_from = delta_mn,
                      names_from =c(var))%>%
-  ungroup()%>%
-  mutate(overall = Precip_summer+Temp_summer+Precip_winter+Temp_winter+Abstraction)%>%
+  dplyr::ungroup()%>%
+  dplyr::mutate(overall = Precip_summer+Temp_summer+Precip_winter+Temp_winter+Abstraction)%>%
   tidyr::pivot_wider(id_cols = year,
                      values_from = Abstraction:overall,
                      names_from = regime,
                      names_sep = "___")%>%
-  ungroup()%>%
+  dplyr::ungroup()%>%
   # mutate(across(!year,~RcppRoll::roll_meanr(.x,n = 10,na.rm = FALSE,fill = NA)))%>%
   # mutate(x = RcppRoll::roll_meanr(Precip_summer.Rainfall,n = 10,na.rm = FALSE,fill = NA))%>%
   tidyr::pivot_longer(cols = !year,
                       names_to = "var.regime",
                       values_to = "delta_mn")%>%
-  mutate(var = str_split_i(var.regime,"___",1),
+  dplyr::mutate(var = str_split_i(var.regime,"___",1),
          regime = str_split_i(var.regime,"___",2))
 
 
@@ -1118,7 +1148,7 @@ ggplot(deltas%>%filter(!var_fct=="overall"),aes(year,y = delta_mn*100))+
   theme_bw()+
   scale_x_continuous(name = "Year",breaks = seq(1910,2030,20),
                      expand = c(0,0),
-                     limits = c(1980,2023))+
+                     limits = c(1900,2023))+
   scale_y_continuous(name = expression(Q7[min]~Anomaly~"(%), 10-year mean"))+
   scale_color_manual(guide = guide_legend(title = NULL,order = 2),
                      values = "grey25")+
@@ -1146,3 +1176,660 @@ DAT3%>%
             WaterYear[which.max(numExceedsD3)],
             WaterYear[which.max(numExceeds)]
   )
+
+
+
+
+# Just for southwest of province
+drought_basins<-st_read("../DATA/1.Spatial_data/regional/BC/zobo_zones_boundaries_admin.units_coastline/zobo1_DroughtBasins/B.C._Drought_Basin_Boundaries_-_2024/B.C._Drought_Basin_Boundaries_-_2024.shp")
+stations_sf<-st_as_sf(stations,coords = c("Lon","Lat"),crs ="EPSG:4326",remove = FALSE)
+stations_drought_basins<-stations_sf%>%
+  st_transform(st_crs(drought_basins))%>%
+  select(ID)%>%
+  st_intersection(drought_basins%>%select(BasinName))%>%
+  st_drop_geometry()
+  
+x<-stations_sf%>%filter(!ID %in% stations_drought_basins$ID)
+tmap_mode("view")
+tm_shape(drought_basins)+tm_polygons()+
+  tm_shape(stations_sf)+tm_dots()+
+  tm_shape(x)+tm_dots(col = "red")
+
+stations_drought_basins<-rbind(stations_drought_basins,
+                               data.frame(ID = c("08HB024",
+                                                 "08HB048",
+                                                 "08MH029",
+                                                 "08NN013",
+                                                 "08NN012",
+                                                 "08NH032",
+                                                 "08NH006",
+                                                 "08NP001"),
+                                          BasinName = c("East Vancouver Island",
+                                                        "West Vancouver Island",
+                                                        "Lower Mainland",
+                                                        "Kettle",
+                                                        "Kettle",
+                                                        "West Kootenay",
+                                                        "East Kootenay",
+                                                        "East Kootenay")))
+
+deltas<-
+  
+  RES%>%
+    left_join(stations_drought_basins)%>%
+  filter(BasinName%in%c("Lower Mainland","Sunshine Coast","East Vancouver Island","West Vancouver Island"))%>%
+  group_by(year,var)%>%
+  # dplyr::summarise(delta_mn=(mean(delta)%>%exp())-1)%>%
+  dplyr::summarise(delta_mn=mean(delta))%>%
+  tidyr::pivot_wider(id_cols=c(year),
+                     values_from = delta_mn,
+                     names_from =c(var))%>%
+  ungroup()%>%
+  mutate(overall = Precip_summer+Temp_summer+Precip_winter+Temp_winter+Abstraction)%>%
+  # mutate(across(!year,~function(x){(exp(x)-1)}))%>%
+  # tidyr::pivot_wider(id_cols = year,
+  #                    values_from = Abstraction:overall,
+  #                    names_from = regime,
+  #                    names_sep = "___")%>%
+  ungroup()%>%
+  mutate(across(!year,~RcppRoll::roll_meanr(.x,n = 10,na.rm = FALSE,fill = NA)))%>%
+  # mutate(x = RcppRoll::roll_meanr(Precip_summer.Rainfall,n = 10,na.rm = FALSE,fill = NA))%>%
+  tidyr::pivot_longer(cols = !year,
+                      names_to = "var",
+                      values_to = "delta_mn")
+
+deltas$var_fct<-factor(deltas$var,
+                       levels = c("overall", "Temp_summer","Temp_winter","Precip_summer","Precip_winter","Abstraction"),
+                       labels = c("overall","T[summer]","T[winter]","P[summer]","P[winter]","Abstraction"))
+
+# deltas$regime_fct<-factor(deltas$regime,levels =  c("Rainfall","Hybrid","Snowmelt","Glacial"))
+
+
+brkFun<-function(x){
+  x2<-100*(exp(x)-1)
+  # x2.seq<-seq(-max(abs(x2)),max(abs(x2)),length.out = 7)%>%
+  #   round(digits=-1)
+  
+  
+  if(max(abs(x2))>30){
+    x3.seq<-log(c(-40,-20,0,20)/100+1)
+  } else {
+    x3.seq<-log(c(-20,-10,0,10,20)/100+1)
+  } 
+  
+  return(x3.seq)
+  
+}
+minorbrkFun<-function(x){
+  x2<-100*(exp(x)-1)
+  # x2.seq<-seq(-max(abs(x2)),max(abs(x2)),length.out = 7)%>%
+  #   round(digits=-1)
+  
+  
+  if(max(abs(x2))>30){
+    x3.seq<-log(c(-40,-30,-20,-10,0,10,20)/100+1)
+  } else {
+    x3.seq<-log(c(-20,-15,-10,-5,0,5,10,15,20)/100+1)
+  }
+  
+  return(x3.seq)
+  
+}
+
+ggplot(deltas%>%filter(!var_fct=="overall"),aes(year,y = (delta_mn)))+
+  geom_hline(yintercept = 0,
+             col = "grey",alpha =1)+
+  geom_area(aes(fill = var_fct))+
+  # geom_area(aes(y = -(delta_mn),fill = var_fct),alpha = 0)+ # ensure centering
+  geom_line(data = deltas%>%filter(var_fct=="overall"),aes(col = "Average\nTotal\nAnomaly"),linewidth = 1)+
+  
+  theme_bw()+
+  scale_x_continuous(name = "Year",breaks = seq(1910,2030,20),
+                     expand = c(0,0),
+                     limits = c(1909,2023))+
+  scale_y_continuous(name = ("Low Flow Anomaly (%)\n10-year mean"),
+                     labels = function(x){100*(exp(x)-1)},
+                     breaks = ~brkFun(.x),
+                     minor_breaks = ~minorbrkFun(.x)
+                     # breaks = log(seq(0.5,1.5,0.1))
+  )+
+  scale_color_manual(guide = guide_legend(title = NULL,order = 2),
+                     values = "grey25")+
+  scale_fill_manual(name = "Anomaly\nDriven By:",
+                    values = c("#8C510A", "#DFC27D","#35978F","#80CDC1","purple"),
+                    guide = guide_legend(order = 1),
+                    labels = parse_format()
+  )+
+  # facet_wrap(facets = "regime_fct",ncol = 1,strip.position = "right",
+  #            labeller = function(variable, value){return(paste(value,"Regimes"))},
+  #            scales = "free_y")+
+  theme(axis.ticks = element_blank(),
+        strip.placement = "outside",
+        legend.position="right",
+        legend.background = element_blank(),
+        legend.spacing.y = unit(0,"mm"),
+        # legend.margin = margin(0,0,0,0),
+        legend.box.background =  element_rect(colour = "black"))
+
+ggsave("3.figures/Delta_historical_SW_BC.png",width = 12,height = 2.7,dpi = 600)
+
+
+DAT3<-DAT%>%
+  left_join(stations_drought_basins)%>%
+  left_join(stations%>%select(ID,regime))%>%
+  filter(BasinName%in%c("Lower Mainland","Sunshine Coast","East Vancouver Island","West Vancouver Island"))%>%
+  filter(regime=="Rainfall")%>%
+  # filter(str_detect(ID,"08H"))%>%
+  group_by(WaterYear)%>%
+  dplyr::summarize(
+    N=n(),
+    # numExceeds = sum(underCEFT)/n(),
+    numExceedsD5 = sum(underD5)/n(),
+    # numExceedsD4 = sum(underD4)/n(),
+    # numExceedsD3 = sum(underD3)/n(),
+    # numExceedsD5Aug = sum(underD5Aug)/n(),
+    # numExceedsD5Sep = sum(underD5Sep)/n(),
+    # numExceedsD5Oct = sum(underD5Oct,na.rm = TRUE)/sum(!is.na(underD5Oct)),
+  )
+
+
+DAT3.long<-DAT3%>%
+  select(WaterYear,numExceedsD5)%>%
+  tidyr::pivot_longer(cols=c(numExceedsD5))
+
+
+rollFunc<-function(yr,val){
+  
+  tibble(
+    val = zoo::rollmean(val, k=10, align = "right", fill=NA),
+    yr = yr
+  )
+}
+
+DAT4<-DAT3%>%
+  reframe(
+    numExceedsD5.10 = rollFunc(WaterYear,numExceedsD5)
+     )%>%
+  tidyr::unnest(cols = c(
+    # numExceeds.10, 
+     numExceedsD5.10    ),names_sep = "_")%>%
+  dplyr::select(c(
+                  "numExceedsD5.10_val",
+                  "numExceedsD5.10_yr"
+   ))%>%
+  dplyr::rename(c(WaterYear = numExceedsD5.10_yr,
+                   numExceedsD5.10 = numExceedsD5.10_val
+  
+  ))
+
+
+
+
+
+
+
+DAT4.long<-DAT4%>%
+  select(WaterYear,numExceedsD5.10)%>%
+  tidyr::pivot_longer(cols=c(numExceedsD5.10))
+
+
+ggplot(DAT4.long,aes(x = WaterYear,y = value*100,color = name))+
+  geom_line(linewidth = 1)+
+  geom_point()
+  
+  
+  scale_x_continuous(name = NULL,expand = c(0,0),
+                     limits = c(1909,2023),
+                     breaks = seq(1910,2030,20),
+                     # breaks = c(1900,1950,2000,2050,2085),
+                     # labels = c("1900","1950","2000","mid-21st\ncentury","late-21st\ncentury"),
+                     # minor_breaks = c(1925,1975,2025)
+  )+
+  scale_y_continuous(name= "% Catchments Transgressing Threshold, 10-year mean",
+                     # labels = function(x){x*100},
+                     # labels = c("","25","50","75","100"),
+                     # limits= c(-0.01,1),
+                     # breaks = c(0,.25,.5,.75,1),
+                     # expand = c(0,0),
+                     oob = squish)+
+  scale_color_manual(values=c("#7D3737"),
+                     labels = c("Level 5"),
+                     name ="Threshold" )+
+  
+  # scale_linetype(name = "",
+  #                labels = "Simulated\nhistorical\n(10-year mean)",
+  #                guide = guide_legend())+
+  
+  theme_bw()+
+  
+  theme(
+    # strip.background = element_blank(),
+    #     strip.text.x = element_blank(),
+    # panel.grid.major = element_blank(),
+    # panel.grid.minor = element_blank()
+    axis.ticks = element_blank(),
+    strip.placement = "outside",
+    legend.position="right",
+    # legend.justification = c(1,0),
+    legend.background = element_rect(colour = "black")
+    
+  )
+  
+  
+  # relative to 1950-1999 ##########
+  
+  # What is causing the changes decade to decade?
+  
+  WeatherDataMean<-WeatherData%>%
+    filter(Year<=1999& Year>=1950)%>%
+    group_by(ID,Month)%>%
+    dplyr::summarise(across(Mean.Temp..C.:Total.cms,~mean(.x)))
+  
+  WeatherDataDecadal<-WeatherData%>%
+    mutate(decade = floor(Year/1)*1)%>%
+    group_by(ID,decade,Month)%>%
+    dplyr::summarise(across(Mean.Temp..C.:Total.cms,~mean(.x)))
+  
+  WeatherDataDecadal<-left_join(WeatherDataDecadal,WeatherDataMean,by = c("ID","Month"),
+                                suffix = c("","mn"))
+  
+  WeatherDataDecadal$Mean.Temp..C.Delta<-WeatherDataDecadal$Mean.Temp..C.- WeatherDataDecadal$Mean.Temp..C.mn
+  WeatherDataDecadal$Total.Precip..mm.Delta<-WeatherDataDecadal$Total.Precip..mm.- WeatherDataDecadal$Total.Precip..mm.mn
+  WeatherDataDecadal$Total.cms.Delta<-WeatherDataDecadal$Total.cms#- WeatherDataDecadal$Total.cmsmn
+  
+  
+  blankData<-expand.grid(
+    decade = seq(1900,2022,1),
+    Month=1:12,
+    
+    Total.Precip..mm. = 0,
+    Mean.Temp..C. = 0,
+    Total.cms=0
+  )
+  it_mn=9
+  dataYearly_blank<-blankData%>%
+    group_by(decade)%>%
+    dplyr::summarize(
+      # winterPrecip = sum(Total.Precip..mm.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+      #                meanWinterTemp =mean(Mean.Temp..C.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+      
+      Precip_1 = sum(Total.Precip..mm.[Month%in%c(it_mn)],na.rm = TRUE),
+      Precip_2 = sum(Total.Precip..mm.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Precip_3 = sum(Total.Precip..mm.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Precip_4 = sum(Total.Precip..mm.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Precip_6 = sum(Total.Precip..mm.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Precip_8 = sum(Total.Precip..mm.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Precip_12 = sum(Total.Precip..mm.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+      
+      Temp_1 = mean(Mean.Temp..C.[Month%in%c(it_mn)],na.rm = TRUE),
+      Temp_2 = mean(Mean.Temp..C.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Temp_3 = mean(Mean.Temp..C.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Temp_4 = mean(Mean.Temp..C.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Temp_6 = mean(Mean.Temp..C.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Temp_8 = mean(Mean.Temp..C.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Temp_12 = mean(Mean.Temp..C.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+      Total.cms = Total.cms[n()]
+      
+      
+    )%>%
+    filter(decade%in%1901:2022)
+  
+  RES<-data.frame()
+  for(it_stn in 1:230){
+    tic()
+    MonBestModel<-readRDS(paste0("2.data/2.working/RegressionOptimization/BestModels/step2_lm_",stations$ID[it_stn],".rds"))
+    
+    it_mn<-stations$minSumFlowMonth[it_stn]
+    
+    
+    ## winter temperature
+    
+    data_x<-left_join(blankData,WeatherDataDecadal%>%
+                        filter(ID==stations$ID[it_stn]& Month%in%c(11,12,1,2,3,4))%>%
+                        select(decade, Month, Mean.Temp..C.Delta))
+    data_x$Mean.Temp..C.Delta[is.na(data_x$Mean.Temp..C.Delta)]<-0
+    data_x$Mean.Temp..C.<-data_x$Mean.Temp..C.+data_x$Mean.Temp..C.Delta
+    
+    data_x$WaterYear<-data_x$decade
+    if(it_mn<12){
+      data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)] <- data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)]+1
+    }
+    
+    dataYearly<-data_x%>%
+      group_by(WaterYear)%>%
+      dplyr::summarize(
+        # winterPrecip = sum(Total.Precip..mm.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        #                meanWinterTemp =mean(Mean.Temp..C.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        
+        Precip_1 = sum(Total.Precip..mm.[Month%in%c(it_mn)],na.rm = TRUE),
+        Precip_2 = sum(Total.Precip..mm.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_3 = sum(Total.Precip..mm.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_4 = sum(Total.Precip..mm.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_6 = sum(Total.Precip..mm.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_8 = sum(Total.Precip..mm.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_12 = sum(Total.Precip..mm.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        
+        Temp_1 = mean(Mean.Temp..C.[Month%in%c(it_mn)],na.rm = TRUE),
+        Temp_2 = mean(Mean.Temp..C.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_3 = mean(Mean.Temp..C.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_4 = mean(Mean.Temp..C.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_6 = mean(Mean.Temp..C.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_8 = mean(Mean.Temp..C.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_12 = mean(Mean.Temp..C.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Total.cms = Total.cms[n()]
+        
+        
+      )%>%
+      filter(WaterYear%in%c(1901:2022))
+    
+    res<-data.frame(ID = stations$ID[it_stn],
+                    regime = stations$regime[it_stn],
+                    year = dataYearly$WaterYear,
+                    var = "Temp_winter",
+                    delta = predict(MonBestModel[[it_mn]],newdata = dataYearly)-predict(MonBestModel[[it_mn]],newdata = dataYearly_blank))
+    
+    RES<-rbind(RES,res) 
+    ## summer temperature
+    
+    data_x<-left_join(blankData,WeatherDataDecadal%>%
+                        filter(ID==stations$ID[it_stn]& Month%in%c(5:10))%>%
+                        select(decade, Month, Mean.Temp..C.Delta))
+    data_x$Mean.Temp..C.Delta[is.na(data_x$Mean.Temp..C.Delta)]<-0
+    data_x$Mean.Temp..C.<-data_x$Mean.Temp..C.+data_x$Mean.Temp..C.Delta
+    
+    
+    data_x$WaterYear<-data_x$decade
+    if(it_mn<12){
+      data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)] <- data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)]+1
+    }
+    
+    dataYearly<-data_x%>%
+      group_by(WaterYear)%>%
+      dplyr::summarize(
+        # winterPrecip = sum(Total.Precip..mm.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        #                meanWinterTemp =mean(Mean.Temp..C.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        
+        Precip_1 = sum(Total.Precip..mm.[Month%in%c(it_mn)],na.rm = TRUE),
+        Precip_2 = sum(Total.Precip..mm.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_3 = sum(Total.Precip..mm.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_4 = sum(Total.Precip..mm.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_6 = sum(Total.Precip..mm.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_8 = sum(Total.Precip..mm.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_12 = sum(Total.Precip..mm.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        
+        Temp_1 = mean(Mean.Temp..C.[Month%in%c(it_mn)],na.rm = TRUE),
+        Temp_2 = mean(Mean.Temp..C.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_3 = mean(Mean.Temp..C.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_4 = mean(Mean.Temp..C.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_6 = mean(Mean.Temp..C.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_8 = mean(Mean.Temp..C.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_12 = mean(Mean.Temp..C.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Total.cms = Total.cms[n()]
+        
+        
+      )%>%
+      filter(WaterYear%in%c(1901:2022))
+    res<-data.frame(ID = stations$ID[it_stn],
+                    regime = stations$regime[it_stn],
+                    year = dataYearly$WaterYear,
+                    var = "Temp_summer",
+                    delta = predict(MonBestModel[[it_mn]],newdata = dataYearly)-predict(MonBestModel[[it_mn]],newdata = dataYearly_blank))
+    
+    RES<-rbind(RES,res)
+    
+    
+    
+    ## winter precip
+    
+    data_x<-left_join(blankData,WeatherDataDecadal%>%
+                        filter(ID==stations$ID[it_stn]& Month%in%c(11,12,1,2,3,4))%>%
+                        select(decade, Month, Total.Precip..mm.Delta))
+    data_x$Total.Precip..mm.Delta[is.na(data_x$Total.Precip..mm.Delta)]<-0
+    data_x$Total.Precip..mm.<-data_x$Total.Precip..mm.+data_x$Total.Precip..mm.Delta
+    
+    
+    data_x$WaterYear<-data_x$decade
+    if(it_mn<12){
+      data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)] <- data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)]+1
+    }
+    
+    dataYearly<-data_x%>%
+      group_by(WaterYear)%>%
+      dplyr::summarize(
+        # winterPrecip = sum(Total.Precip..mm.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        #                meanWinterTemp =mean(Mean.Temp..C.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        
+        Precip_1 = sum(Total.Precip..mm.[Month%in%c(it_mn)],na.rm = TRUE),
+        Precip_2 = sum(Total.Precip..mm.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_3 = sum(Total.Precip..mm.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_4 = sum(Total.Precip..mm.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_6 = sum(Total.Precip..mm.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_8 = sum(Total.Precip..mm.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_12 = sum(Total.Precip..mm.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        
+        Temp_1 = mean(Mean.Temp..C.[Month%in%c(it_mn)],na.rm = TRUE),
+        Temp_2 = mean(Mean.Temp..C.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_3 = mean(Mean.Temp..C.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_4 = mean(Mean.Temp..C.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_6 = mean(Mean.Temp..C.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_8 = mean(Mean.Temp..C.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_12 = mean(Mean.Temp..C.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Total.cms = Total.cms[n()]
+        
+        
+      )%>%
+      filter(WaterYear%in%c(1901:2022))
+    res<-data.frame(ID = stations$ID[it_stn],
+                    regime = stations$regime[it_stn],
+                    year = dataYearly$WaterYear,
+                    var = "Precip_winter",
+                    delta = predict(MonBestModel[[it_mn]],newdata = dataYearly)-predict(MonBestModel[[it_mn]],newdata = dataYearly_blank))
+    
+    RES<-rbind(RES,res)
+    ## summer precip
+    
+    data_x<-left_join(blankData,WeatherDataDecadal%>%
+                        filter(ID==stations$ID[it_stn]& Month%in%c(5:10))%>%
+                        select(decade, Month, Total.Precip..mm.Delta))
+    data_x$Total.Precip..mm.Delta[is.na(data_x$Total.Precip..mm.Delta)]<-0
+    data_x$Total.Precip..mm.<-data_x$Total.Precip..mm.+data_x$Total.Precip..mm.Delta
+    
+    
+    data_x$WaterYear<-data_x$decade
+    if(it_mn<12){
+      data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)] <- data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)]+1
+    }
+    
+    dataYearly<-data_x%>%
+      group_by(WaterYear)%>%
+      dplyr::summarize(
+        # winterPrecip = sum(Total.Precip..mm.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        #                meanWinterTemp =mean(Mean.Temp..C.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        
+        Precip_1 = sum(Total.Precip..mm.[Month%in%c(it_mn)],na.rm = TRUE),
+        Precip_2 = sum(Total.Precip..mm.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_3 = sum(Total.Precip..mm.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_4 = sum(Total.Precip..mm.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_6 = sum(Total.Precip..mm.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_8 = sum(Total.Precip..mm.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_12 = sum(Total.Precip..mm.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        
+        Temp_1 = mean(Mean.Temp..C.[Month%in%c(it_mn)],na.rm = TRUE),
+        Temp_2 = mean(Mean.Temp..C.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_3 = mean(Mean.Temp..C.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_4 = mean(Mean.Temp..C.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_6 = mean(Mean.Temp..C.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_8 = mean(Mean.Temp..C.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_12 = mean(Mean.Temp..C.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Total.cms = Total.cms[n()]
+        
+        
+      )%>%
+      filter(WaterYear%in%c(1901:2022))
+    res<-data.frame(ID = stations$ID[it_stn],
+                    regime = stations$regime[it_stn],
+                    year = dataYearly$WaterYear,
+                    var = "Precip_summer",
+                    delta = predict(MonBestModel[[it_mn]],newdata = dataYearly)-predict(MonBestModel[[it_mn]],newdata = dataYearly_blank))
+    
+    RES<-rbind(RES,res)
+    
+    ## Abstraction
+    
+    data_x<-left_join(blankData,WeatherDataDecadal%>%
+                        filter(ID==stations$ID[it_stn])%>%
+                        select(decade, Month, Total.cms.Delta))
+    # data_x$Total.Precip..mm.Delta[is.na(data_x$Total.Precip..mm.Delta)]<-0
+    data_x$Total.cms<-data_x$Total.cms+data_x$Total.cms.Delta
+    
+    
+    data_x$WaterYear<-data_x$decade
+    if(it_mn<12){
+      data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)] <- data_x$WaterYear[data_x$Month%in%c((it_mn+1):12)]+1
+    }
+    
+    dataYearly<-data_x%>%
+      group_by(WaterYear)%>%
+      dplyr::summarize(
+        # winterPrecip = sum(Total.Precip..mm.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        #                meanWinterTemp =mean(Mean.Temp..C.[Month%in%c(11,12,1,2,3,4)],na.rm = TRUE),
+        
+        Precip_1 = sum(Total.Precip..mm.[Month%in%c(it_mn)],na.rm = TRUE),
+        Precip_2 = sum(Total.Precip..mm.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_3 = sum(Total.Precip..mm.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_4 = sum(Total.Precip..mm.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_6 = sum(Total.Precip..mm.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_8 = sum(Total.Precip..mm.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Precip_12 = sum(Total.Precip..mm.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        
+        Temp_1 = mean(Mean.Temp..C.[Month%in%c(it_mn)],na.rm = TRUE),
+        Temp_2 = mean(Mean.Temp..C.[Month%in%((((it_mn-1):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_3 = mean(Mean.Temp..C.[Month%in%((((it_mn-2):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_4 = mean(Mean.Temp..C.[Month%in%((((it_mn-3):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_6 = mean(Mean.Temp..C.[Month%in%((((it_mn-5):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_8 = mean(Mean.Temp..C.[Month%in%((((it_mn-7):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Temp_12 = mean(Mean.Temp..C.[Month%in%((((it_mn-11):it_mn)-1)%%12+1)],na.rm = TRUE),
+        Total.cms = Total.cms[n()]
+        
+        
+      )%>%
+      filter(WaterYear%in%c(1901:2022))
+    res<-data.frame(ID = stations$ID[it_stn],
+                    regime = stations$regime[it_stn],
+                    year = dataYearly$WaterYear,
+                    var = "Abstraction",
+                    delta = predict(MonBestModel[[it_mn]],newdata = dataYearly)-predict(MonBestModel[[it_mn]],newdata = dataYearly_blank))
+    
+    RES<-rbind(RES,res)
+    print(sprintf("done station %d",it_stn))
+    toc()
+    
+  }
+  
+  RES$regime<-factor(RES$regime,levels = c("Rainfall","Hybrid","Snowfall","Glacial"),
+                     labels =  c("Rainfall","Hybrid","Snowmelt","Glacial"))
+  
+  
+  deltas<-
+    RES%>%
+    group_by(regime,year,var)%>%
+    # dplyr::summarise(delta_mn=(mean(delta)%>%exp())-1)%>%
+    dplyr::summarise(delta_mn=mean(delta))%>%
+    tidyr::pivot_wider(id_cols=c(year,regime),
+                       values_from = delta_mn,
+                       names_from =c(var))%>%
+    dplyr::ungroup()%>%
+    dplyr::mutate(overall = Precip_summer+Temp_summer+Precip_winter+Temp_winter+Abstraction)%>%
+    # mutate(across(!year,~function(x){(exp(x)-1)}))%>%
+    tidyr::pivot_wider(id_cols = year,
+                       values_from = Abstraction:overall,
+                       names_from = regime,
+                       names_sep = "___")%>%
+    dplyr::ungroup()%>%
+    dplyr::mutate(across(!year,~RcppRoll::roll_meanr(.x,n = 10,na.rm = FALSE,fill = NA)))%>%
+    dplyr::reframe(across(year:overall___Glacial,~approx( .x, n=1211 )$y))%>%
+    filter(year>=1910)%>%
+    
+    # mutate(x = RcppRoll::roll_meanr(Precip_summer.Rainfall,n = 10,na.rm = FALSE,fill = NA))%>%
+    tidyr::pivot_longer(cols = !year,
+                        names_to = "var.regime",
+                        values_to = "delta_mn")%>%
+    dplyr::mutate(var = str_split_i(var.regime,"___",1),
+                  regime = str_split_i(var.regime,"___",2))
+  
+  deltas$var_fct<-factor(deltas$var,
+                         levels = c("overall", "Temp_summer","Temp_winter","Precip_summer","Precip_winter","Abstraction"),
+                         labels = c("overall","T[summer]","T[winter]","P[summer]","P[winter]","Abstraction"))
+  
+  deltas$regime_fct<-factor(deltas$regime,levels =  c("Rainfall","Hybrid","Snowmelt","Glacial"))
+  
+  
+  brkFun<-function(x){
+    x2<-100*(exp(x)-1)
+    # x2.seq<-seq(-max(abs(x2)),max(abs(x2)),length.out = 7)%>%
+    #   round(digits=-1)
+    
+    
+    if(max(abs(x2))>30){
+      x3.seq<-log(c(-40,-20,0,20,40)/100+1)
+    } else {
+      x3.seq<-log(c(-20,-10,0,10,20)/100+1)
+    } 
+    
+    return(x3.seq)
+    
+  }
+  minorbrkFun<-function(x){
+    x2<-100*(exp(x)-1)
+    # x2.seq<-seq(-max(abs(x2)),max(abs(x2)),length.out = 7)%>%
+    #   round(digits=-1)
+    
+    
+    if(max(abs(x2))>30){
+      x3.seq<-log(c(-40,-30,-20,-10,0,10,20)/100+1)
+    } else {
+      x3.seq<-log(c(-20,-15,-10,-5,0,5,10,15,20)/100+1)
+    }
+    
+    return(x3.seq)
+    
+  }
+  
+  ggplot(deltas%>%filter(!var_fct=="overall"),aes(year,y = (delta_mn)))+
+    geom_hline(yintercept = 0,
+               col = "grey",alpha =1)+
+    geom_area(aes(fill = var_fct))+
+    # geom_area(aes(y = -(delta_mn),fill = var_fct),alpha = 0)+ # ensure centering
+    geom_line(data = deltas%>%filter(var_fct=="overall"),aes(col = "Average\nTotal\nAnomaly"),linewidth = 1)+
+    
+    theme_bw()+
+    scale_x_continuous(name = "Year",breaks = seq(1910,2030,20),
+                       expand = c(0,0),
+                       limits = c(1909,2023))+
+    scale_y_continuous(name = expression(Q7[min]~Anomaly~"(%), 10-year mean"),
+                       labels = function(x){100*(exp(x)-1)},
+                       breaks = ~brkFun(.x),
+                       minor_breaks = ~minorbrkFun(.x)
+                       # breaks = log(seq(0.5,1.5,0.1))
+    )+
+    scale_color_manual(guide = guide_legend(title = NULL,order = 2),
+                       values = "grey25")+
+    scale_fill_manual(name = "Anomaly\nDriven By:",
+                      values = c("#8C510A", "#DFC27D","#35978F","#80CDC1","purple"),
+                      guide = guide_legend(order = 1),
+                      labels = parse_format()
+    )+
+    facet_wrap(facets = "regime_fct",ncol = 1,strip.position = "right",
+               labeller = function(variable, value){return(paste(value,"Regimes"))},
+               scales = "free_y")+
+    theme(axis.ticks = element_blank(),
+          strip.placement = "outside",
+          legend.position="right",
+          legend.background = element_blank(),
+          legend.spacing.y = unit(0,"mm"),
+          # legend.margin = margin(0,0,0,0),
+          legend.box.background =  element_rect(colour = "black"))
+  
+  ggsave("3.figures/Delta_historical_1950_1999.png",width = 6.5,height = 6,dpi = 600)
+  ggsave("3.figures/Delta_historical_1950_1999.svg",width = 6.5,height = 6,dpi = 600)
+  

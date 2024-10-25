@@ -1,11 +1,12 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-10
+# Last Update: 2024-10-19
 
 
-# This script performs the main driver/sensitivity analysis presented in the manuscript
+# This script performs the main driver/sensitivity analysis presented in the manuscript (Figure 3)
 # First it loads all the relevant, prepared data
 # Then it loops through the stations, fitting the 'explanatory' regressions to each
+# It also produces some of the figures in Appendix D
 
 
 closeAllConnections()
@@ -51,8 +52,90 @@ data_SWE<-readRDS("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment.RDS")
 #Load daily SWE data
 data_SWE_dly<-readRDS("2.data/2.working/ERA5_LAND_SWE/SWE_data_by_catchment_dly.RDS")
 
+data_SWE_dly$year<-substr(data_SWE_dly$variable,1,4)
+data_SWE_dly$month<-substr(data_SWE_dly$variable,6,7)
+data_SWE_dly$day<-substr(data_SWE_dly$variable,9,10)
+data_SWE_dly$DayOfYear<-lubridate::yday(data_SWE_dly$variable)
 
-names(data_SWE_dly)<-c("ID","Date","SWE")
+data_SWE_dly$value<-pmax(data_SWE_dly$value,0)
+SWE_range<-
+  data_SWE_dly%>%
+  filter(year%in%(1991:2020))%>%
+  group_by(ID,year)%>%
+  dplyr::summarise(minSWE = min(value),
+                   maxSWE = max(value))%>%
+  group_by(ID)%>%
+  dplyr::summarise(highstMinSWE = max(minSWE),
+                   meanMinSWE = mean(minSWE),
+                   meanMaxSWE = mean(maxSWE))%>%
+  # left_join(stations%>%dplyr::select(ID,perc_Gl))%>%
+  mutate(SWE_cutoff = highstMinSWE+(meanMaxSWE-highstMinSWE)*0.1)
+sum(SWE_range$SWE_cutoff<SWE_range$highstMinSWE)
+
+yearlyMinDay<-data_SWE_dly%>%
+  group_by(ID,year)%>%
+  dplyr::summarise(minYrlySWE = min(value))%>%
+  left_join(data_SWE_dly)%>%
+  group_by(ID,year)%>%
+  dplyr::summarise(lastMinDay = max(DayOfYear[value ==minYrlySWE ]))
+
+data_SWE_dly2<-left_join(data_SWE_dly,
+                         yearlyMinDay)%>%
+  filter(DayOfYear<lastMinDay)
+
+x<-data_SWE_dly2%>%
+  group_by(ID,year)%>%
+  mutate(value_roll = RcppRoll::roll_meanr(value,60,fill = NA))%>%
+  group_by(ID,year)%>%
+  dplyr::summarise(first2Month0 = min(DayOfYear[value_roll==min(value)],na.rm = TRUE))
+
+data_SWE_dly2<-data_SWE_dly2%>%
+  left_join(x)%>%
+  filter(DayOfYear<first2Month0)
+
+
+SDD<-
+  data_SWE_dly2%>%
+  left_join(SWE_range)%>%
+  left_join(yearlyMinDay)%>%
+  
+  # filter(month%in%1:10)%>%
+  group_by(ID,year)%>%
+  dplyr::summarise(n = n(),
+                   lastSpringSnow = max(DayOfYear[value>SWE_cutoff]),
+                   noneAbove = !any(value>SWE_cutoff),
+                   noneBelow = all(value>SWE_cutoff))
+SDD$SDD<-pmin(SDD$lastSpringSnow,275)
+SDD$SDD[SDD$noneBelow]<-275
+SDD$SDD[SDD$noneAbove]<-1
+
+SDD$SDD_date<-as.Date(SDD$SDD-1, origin = paste0(SDD$year,"-01-01"))
+data_SWE_dly$date<-data_SWE_dly$variable%>%as.Date()
+
+SDD<-left_join(SDD,data_SWE_dly,by = c("SDD_date" = "date","ID","year"))
+SDD$year<-as.numeric(SDD$year)
+
+# library(plotly)
+# ggplotly(ggplot(data_SWE_dly%>%filter(ID=="08CG001"),aes(as.Date(variable),value))+geom_line())
+# 
+# ggplotly(ggplot(data_SWE%>%filter(ID=="08GD008"),aes(as.Date(variable),value))+geom_line())
+# 
+# ggplotly(ggplot(data_SWE_dly%>%filter(ID=="08CG001"),aes(as.Date(variable),value))+geom_line()+
+#            geom_point(data = SDD%>%filter(ID=="08CG001"),aes(x = SDD_date,y = value)+geom_point(color = "red")))
+# ggplotly(ggplot(data_SWE_dly%>%filter(ID=="08HA003"),aes(as.Date(variable),value))+geom_line()+
+#            geom_point(data = SDD%>%filter(ID=="08HA003"),aes(x = SDD_date,y = value)+geom_point(color = "red")))
+# 
+# ggplot(SDD%>%filter(ID=="08HA003"),aes(x = year.x,y = SDD))+geom_point()
+
+
+# summary(factor(data_SWE_dly$day[data_SWE_dly$month=="07"]))
+# summary(factor(data_SWE_dly$year[data_SWE_dly$month=="07"]))
+# summary(factor(data_SWE_dly$year[data_SWE_dly$month=="08"]))
+# summary(factor(data_SWE_dly$year[data_SWE_dly$month=="09"]))
+# summary(factor(data_SWE_dly$year[data_SWE_dly$month=="10"]))
+# summary(factor(data_SWE_dly$month))
+
+names(data_SWE_dly)[1:3]<-c("ID","Date","SWE")
 
 
 data_SWE$date <- data_SWE$variable%>%ymd()
@@ -73,7 +156,7 @@ maxMonth$maxMonth<-plyr::mapvalues(maxMonth$maxMonth,
 maxMonth<-maxMonth%>%
   group_by(ID)%>%
   dplyr::summarise(maxMonth = ceiling(median(maxMonth)))
-
+ggplot(maxMonth,aes(x = maxMonth))+geom_histogram()
 # maxMonth$maxMonth[maxMonth$maxMonth<3]<-3
 data_SWE<-left_join(data_SWE,maxMonth)
 data_SWE<-data_SWE%>%
@@ -85,7 +168,7 @@ data_SWE$WaterYear[data_SWE$Month%in%c(10,11,12)]<-data_SWE$Year[data_SWE$Month%
 
 
 
-streamDataAll<-dplyr::left_join(streamDataAll,data_SWE_dly,by = c("ID","Date"))
+streamDataAll<-dplyr::left_join(streamDataAll,data_SWE_dly%>%dplyr::select(ID,Date,SWE),by = c("ID","Date"))
 streamDataAll$NovWaterYear<-streamDataAll$year
 streamDataAll$NovWaterYear[streamDataAll$month%in%c(11,12)]<-
   streamDataAll$year[streamDataAll$month%in%c(11,12)]+1
@@ -98,8 +181,8 @@ ECA<-readRDS("2.data/2.working/ECA/ECA.rds")
 watersheds<-st_transform(watersheds,st_crs("+proj=aea +lat_0=40 +lon_0=-96 +lat_1=50 +lat_2=70 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"))
 watersheds$Area_km2<-(st_area(watersheds)/10^6)%>%as.numeric()
 
-stations<-left_join(stations%>%select(!Area_km2),
-                    watersheds%>%select(ID,Area_km2)%>%
+stations<-left_join(stations%>%dplyr::select(!Area_km2),
+                    watersheds%>%dplyr::select(ID,Area_km2)%>%
                       st_drop_geometry(),
                     by = c("ID" ))
 
@@ -121,7 +204,7 @@ stations$month_bgn<-pmax(stations$minSumFlowMonth-1,stations$SDD)
 stations$month_end<-pmin(stations$minSumFlowMonth+1,stations$SAD)
 
 
-# lowQ.10_highSWE.90.years<-list()
+lowQ.10_highSWE.90.years<-list()
 lowQ.10_highSWE.90<-data.frame()
 stations$tempDriven.5<-NA
 stations$tempDriven.1<-NA
@@ -136,7 +219,7 @@ my_lms.pre<-list()
 my_lms.post<-list()
 
 for(it_stn in 1:length(stations$ID)){
-  # it_stn = which(stations$ID=="08HD023")
+  # it_stn = which(stations$ID=="08HA003")
   
   ECA_x<-filter(ECA,StationNum%in%stations$ID[it_stn])
   
@@ -163,7 +246,10 @@ for(it_stn in 1:length(stations$ID)){
     FlowScreen::bf_eckhardt(streamData$Discharge[!is.na(streamData$Discharge)], 0.97, 0.8)
   streamData$BaseFlow_Eckhardt0.995[!is.na(streamData$Discharge)]<-
     FlowScreen::bf_eckhardt(streamData$Discharge[!is.na(streamData$Discharge)], 0.995, 0.8)
-  
+  streamData$BaseFlow_Eckhardt0.97_BFImax0.25[!is.na(streamData$Discharge)]<-
+    FlowScreen::bf_eckhardt(streamData$Discharge[!is.na(streamData$Discharge)], 0.97, 0.25)
+  streamData$BaseFlow_Eckhardt0.995_BFImax0.25[!is.na(streamData$Discharge)]<-
+    FlowScreen::bf_eckhardt(streamData$Discharge[!is.na(streamData$Discharge)], 0.995, 0.25)
   
   
   streamData<-streamData%>%
@@ -245,6 +331,9 @@ for(it_stn in 1:length(stations$ID)){
                      BF_30day_Eckhardt0.97 = mean(BaseFlow_Eckhardt0.97[DayOfYear%in%c((maxSWEdly_day-30):maxSWEdly_day)]),
                      BF_30day_Eckhardt0.995 = mean(BaseFlow_Eckhardt0.995[DayOfYear%in%c((maxSWEdly_day-30):maxSWEdly_day)]),
                      
+                     BF_30day_Eckhardt0.97_BFImax0.25 = mean(BaseFlow_Eckhardt0.97_BFImax0.25[DayOfYear%in%c((maxSWEdly_day-30):maxSWEdly_day)]),
+                     BF_30day_Eckhardt0.995_BFImax0.25 = mean(BaseFlow_Eckhardt0.995_BFImax0.25[DayOfYear%in%c((maxSWEdly_day-30):maxSWEdly_day)]),
+                     
                      
                      winterBF_lynehollick = mean(BaseFlow_lynehollick[month==fixed_BF_month]),
                      winterBF_boughton = mean(BaseFlow_boughton[month==fixed_BF_month]),
@@ -252,7 +341,10 @@ for(it_stn in 1:length(stations$ID)){
                      winterBF_maxwell = mean(BaseFlow_maxwell[month==fixed_BF_month]),
                      winterBF_chapman = mean(BaseFlow_chapman[month==fixed_BF_month]),
                      winterBF_Eckhardt0.995 = mean(BaseFlow_Eckhardt0.995[month==fixed_BF_month]),
-                     winterBF_Eckhardt0.97 = mean(BaseFlow_Eckhardt0.97[month==fixed_BF_month])
+                     winterBF_Eckhardt0.97 = mean(BaseFlow_Eckhardt0.97[month==fixed_BF_month]),
+                     
+                     winterBF_Eckhardt0.995_BFImax0.25 = mean(BaseFlow_Eckhardt0.995_BFImax0.25[month==fixed_BF_month]),
+                     winterBF_Eckhardt0.97_BFImax0.25 = mean(BaseFlow_Eckhardt0.97_BFImax0.25[month==fixed_BF_month])
                      
                      
     )
@@ -343,6 +435,9 @@ for(it_stn in 1:length(stations$ID)){
   
   
   dataYearly2<-left_join(dataYearly2,Div,by = c("NovWaterYear"= "year"))
+  dataYearly2<-left_join(dataYearly2,SDD%>%
+                           filter(ID==stations$ID[it_stn])%>%
+                           select(year,SDD),by = c("NovWaterYear"= "year"))
   
   
   
@@ -357,11 +452,11 @@ for(it_stn in 1:length(stations$ID)){
   dat<-cbind(dat%>%
                scale(scale = TRUE,center = TRUE)%>%
                data.frame()%>%
-               select(!NovWaterYear),
+               dplyr::select(!NovWaterYear),
              dat[,"NovWaterYear"])
-
-
-
+  
+  
+  
   
   if(stations$ID[it_stn] %in% c("08OA004","08OA005","08HD023")){
     dat<-dataYearly2[,c("minSumFlow7.log","summerPrecip","meanSummerTemp","SumT7","maxSWEdly",
@@ -371,9 +466,10 @@ for(it_stn in 1:length(stations$ID)){
     dat<-cbind(dat%>%
                  scale(scale = TRUE,center = TRUE)%>%
                  data.frame()%>%
-                 select(!NovWaterYear),
+                 dplyr::select(!NovWaterYear),
                dat[,"NovWaterYear"])
     dat$BF_30day_Eckhardt0.97<-0}
+  
   
   
   tryWaterUse = FALSE
@@ -412,7 +508,8 @@ for(it_stn in 1:length(stations$ID)){
   names(p.vals)<-paste0(names(p.vals),".p")
   d<-cbind(ID=stations$ID[it_stn],
            t(mylm$coefficients),
-           t(p.vals))%>%
+           t(p.vals),
+           N=length(mylm$residuals))%>%
     data.frame()
   
   stnCoeffs<-plyr::rbind.fill(stnCoeffs,d)
@@ -494,15 +591,17 @@ for(it_stn in 1:length(stations$ID)){
   dat<-dataYearly2[,c("minSumFlow7.log","summerPrecip","meanSummerTemp","SumT7","maxSWEdly",
                       "ECA_I_9","ECA_III_24","Total.cms","winterPrecip","meanWinterTemp",
                       "SWE",
-                      
+                      "SDD",
                       "BF_30day_lynehollick"  ,
                       "BF_30day_boughton","BF_30day_jakeman"   ,    
                       "BF_30day_maxwell","BF_30day_chapman",
                       "BF_30day_Eckhardt0.97","BF_30day_Eckhardt0.995" ,
+                      "BF_30day_Eckhardt0.97_BFImax0.25","BF_30day_Eckhardt0.995_BFImax0.25" ,
                       
                       "winterBF_lynehollick","winterBF_boughton",     
                       "winterBF_jakeman","winterBF_maxwell"   ,  "winterBF_chapman"   ,    
-                      "winterBF_Eckhardt0.995" ,"winterBF_Eckhardt0.97" 
+                      "winterBF_Eckhardt0.995" ,"winterBF_Eckhardt0.97" ,    
+                      "winterBF_Eckhardt0.995_BFImax0.25" ,"winterBF_Eckhardt0.97_BFImax0.25" 
   )]%>%
     # na.omit()%>%
     scale(center = TRUE, scale = TRUE)%>%
@@ -513,15 +612,17 @@ for(it_stn in 1:length(stations$ID)){
            "BF_30day_boughton","BF_30day_jakeman"   ,    
            "BF_30day_maxwell","BF_30day_chapman",
            "BF_30day_Eckhardt0.97","BF_30day_Eckhardt0.995" ,
+           "BF_30day_Eckhardt0.97_BFImax0.25","BF_30day_Eckhardt0.995_BFImax0.25" ,
            
            "winterBF_lynehollick","winterBF_boughton",     
            "winterBF_jakeman","winterBF_maxwell","winterBF_chapman",     
-           "winterBF_Eckhardt0.995" ,"winterBF_Eckhardt0.97" )]<-0
+           "winterBF_Eckhardt0.995" ,"winterBF_Eckhardt0.97" ,
+           "winterBF_Eckhardt0.995_BFImax0.25" ,"winterBF_Eckhardt0.97_BFImax0.25" )]<-0
   }
   
-  if(all(is.na(dat$Total.cms))){dat<-select(dat,!Total.cms)}
-  if(all(is.na(dat$ECA_I_9))){dat<-select(dat,!ECA_I_9)}
-  if(all(is.na(dat$ECA_III_24))){dat<-select(dat,!ECA_III_24)}
+  if(all(is.na(dat$Total.cms))){dat<-dplyr::select(dat,!Total.cms)}
+  if(all(is.na(dat$ECA_I_9))){dat<-dplyr::select(dat,!ECA_I_9)}
+  if(all(is.na(dat$ECA_III_24))){dat<-dplyr::select(dat,!ECA_III_24)}
   
   dat<-na.omit(dat)
   summary(mylm)
@@ -530,17 +631,19 @@ for(it_stn in 1:length(stations$ID)){
                  "BF_30day_boughton","BF_30day_jakeman"   ,    
                  "BF_30day_maxwell","BF_30day_chapman",
                  "BF_30day_Eckhardt0.97","BF_30day_Eckhardt0.995" ,
+                 "BF_30day_Eckhardt0.97_BFImax0.25","BF_30day_Eckhardt0.995_BFImax0.25" ,
                  
                  "winterBF_lynehollick","winterBF_boughton",     
                  "winterBF_jakeman","winterBF_maxwell","winterBF_chapman"   ,    
-                 "winterBF_Eckhardt0.995" ,"winterBF_Eckhardt0.97")
+                 "winterBF_Eckhardt0.995" ,"winterBF_Eckhardt0.97",
+                 "winterBF_Eckhardt0.995_BFImax0.25" ,"winterBF_Eckhardt0.97_BFImax0.25" )
   altCoeffs<-c()
   altCoeffs.p<-c()
-  for(it_var in 1:14){
+  for(it_var in 1:18){
     if (stations$ID[it_stn]%in%c("08OA004","08OA005","08HD023")){next}
-    if(it_var<=7){mylmupdate<-update(mylm,
+    if(it_var<=9){mylmupdate<-update(mylm,
                                      data = dat)}
-    if(it_var>=8){mylmupdate<-update(mylm,~.+ SWE - maxSWEdly,
+    if(it_var>=10){mylmupdate<-update(mylm,~.+ SWE - maxSWEdly,
                                      data = dat)}
     
     mylmupdate<-update(mylmupdate,
@@ -564,14 +667,19 @@ for(it_stn in 1:length(stations$ID)){
   ## alternatives for SWE
   mylmupdate.SWE<-update(mylm,~.+ SWE - maxSWEdly,
                          data = dat)
+  mylmupdate.SDD<-update(mylm,~.+ SDD - maxSWEdly,
+                         data = dat)
   SWE.altcoeffs_all<-rbind(SWE.altcoeffs_all,
                            data.frame(
                              ID = stations$ID[it_stn],
                              maxSWEdly = mylm$coefficients["maxSWEdly"],
                              maxSWEdly.p = summary(mylm)$coefficients["maxSWEdly",4],
                              SWE = mylmupdate.SWE$coefficients["SWE"],
-                             SWE.p = summary(mylmupdate.SWE)$coefficients["SWE",4]
+                             SWE.p = summary(mylmupdate.SWE)$coefficients["SWE",4],
+                             SDD = mylmupdate.SDD$coefficients["SDD"],
+                             SDD.p = summary(mylmupdate.SDD)$coefficients["SDD",4]
                            ))
+  
   
   ## use T_winter and P_winter instead of SWE and baseflow
   
@@ -596,7 +704,7 @@ for(it_stn in 1:length(stations$ID)){
     sum(dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))
   
   lowQ.10_highSWE.90.years[[it_stn]]<-dat2$NovWaterYear[(dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))&
-                                                           dat2$maxSWEdly>=quantile(dat2$maxSWEdly,0.9)]
+                                                          dat2$maxSWEdly>=quantile(dat2$maxSWEdly,0.9)]
   msk<-(dat2$minSumFlow7.log<=quantile(dat2$minSumFlow7.log,0.1))&
     dat2$maxSWEdly>=quantile(dat2$maxSWEdly,0.9)
   if(sum(msk)>0){
@@ -632,13 +740,13 @@ for(it_stn in 1:length(stations$ID)){
   stations$covMinSumFlow7[it_stn]<-sd(streamDataYrly$minSumFlow7,na.rm = TRUE)/
     mean(streamDataYrly$minSumFlow7,na.rm = TRUE)
   
-
+  
   
   
   
 }
 
-stnCoeffs<-left_join(stnCoeffs,stations%>%select(ID,regime))
+stnCoeffs<-left_join(stnCoeffs,stations%>%dplyr::select(ID,regime))
 
 stnCoeffs$regime<-factor(stnCoeffs$regime,
                          levels = c("Rainfall","Hybrid","Snowfall","Glacial")%>%rev(),
@@ -646,6 +754,7 @@ stnCoeffs$regime<-factor(stnCoeffs$regime,
 
 
 stnCoeffs.long<-stnCoeffs%>%
+  # filter(N>=20)%>%
   # select(!.p)%>%
   pivot_longer(cols = summerPrecip:Total.cms.p)
 
@@ -714,6 +823,8 @@ ggplot(stnCoeffs.long%>%
 
 
 ggsave("3.figures/Sens_boxplots_beta.png",width = 4, height = 7.5)
+
+ggsave("3.figures/Sens_boxplots_beta.svg",width = 4, height = 7.5)
 
 stnCoeffs.long%>%
   group_by(variable,regime)%>%
@@ -827,21 +938,25 @@ stnRs.long%>%
 
 ## BF alternatives ########
 BF.altCoeffs_all.long<-BF.altCoeffs_all%>%
-  pivot_longer(cols = c(BF_30day_lynehollick:winterBF_Eckhardt0.97..p))%>%
-  mutate(meas = str_detect(name,"\\.\\.p")%>%
-           plyr::mapvalues(from = c(FALSE,TRUE),to = c("coef","p.val")),
-         name = str_remove(name,"\\.\\.p"))%>%
+  tidyr::pivot_longer(cols = c(BF_30day_lynehollick:winterBF_Eckhardt0.97_BFImax0.25..p))%>%
+  dplyr::mutate(meas = str_detect(name,"\\.\\.p")%>%
+                  plyr::mapvalues(from = c(FALSE,TRUE),to = c("coef","p.val")),
+                name = str_remove(name,"\\.\\.p"))%>%
   pivot_wider(id_cols = c(ID,name),
               names_from = meas)%>%
-  mutate(coef = as.numeric(coef),
-         p.val = as.numeric(p.val))
+  dplyr::mutate(coef = as.numeric(coef),
+                p.val = as.numeric(p.val))
 
 BF.altCoeffs_all.long<-left_join(BF.altCoeffs_all.long,stations%>%select(ID,regime))
 
 BF.altCoeffs_all.long$algorithm <-
   str_remove(BF.altCoeffs_all.long$name,"winterBF_|BF_30day_")%>%
-  factor(levels = c("Eckhardt0.97","Eckhardt0.995","boughton","chapman","jakeman","lynehollick","maxwell"),
-         labels = c("Eckhardt",'"Eckhardt, a\\u003D0.995"',"Boughton","Chapman","Jakeman","Lyne-Hollick","Maxwell"))
+  factor(levels = c("Eckhardt0.97","Eckhardt0.995","Eckhardt0.97_BFImax0.25","Eckhardt0.995_BFImax0.25","boughton","chapman","jakeman","lynehollick","maxwell"),
+         labels = c('"Eckhardt\na\\u003D0.97,\nBFImax=0.8"','"Eckhardt\na\\u003D0.995,\nBFImax=0.8"',
+                    '"Eckhardt\na\\u003D0.97,\nBFImax=0.25"','"Eckhardt\na\\u003D0.995,\nBFImax=0.25"',
+                    
+                    
+                    "Boughton","Chapman","Jakeman","Lyne-Hollick","Maxwell"))
 
 BF.altCoeffs_all.long$period<-str_split_fixed(BF.altCoeffs_all.long$name,"_",3)[,1]%>%
   factor(levels = c("BF","winterBF"),
@@ -895,9 +1010,35 @@ ggplot(BF.altCoeffs_all.long%>%
 
 ggsave("3.figures/Sens_boxplots_BF_alternatives.png",width = 7, height = 10)
 
+ggplot(BF.altCoeffs_all.long%>%filter(str_detect(name,"Eckhardt")),
+       aes(x = name,y = coef,group = ID))+geom_line(alpha=0.5)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 270))
+BF.altCoeffs_all.long.med<-
+  BF.altCoeffs_all.long%>%
+  group_by(ID)%>%
+  dplyr::summarize(medianCoef = median(coef))
+
+# Are the catchments that have high correlations consistent across algorithms? yes
+BF.altCoeffs_all.long%>%
+  ggplot(aes(x = ID,y = coef))+
+  geom_boxplot()+
+  facet_wrap(ncol = 1,facets = "regime",scales = "free_x")
+BF.altCoeffs_all.long%>%
+  left_join(BF.altCoeffs_all.long.med)%>%
+  ggplot(aes(x = medianCoef,y = coef,group = ID))+
+  geom_boxplot()
+# facet_wrap(ncol = 1,facets = "regime",scales = "free_x")
+
+x<-stations%>%left_join(BF.altCoeffs_all.long.med)%>%
+  st_as_sf(coords = c("Lon","Lat"),crs = "EPSG:4326")
+#is there regional patterns in which catchments are highly correlated with baseflow? no
+library(tmap)
+tm_shape(x)+tm_dots(col = "medianCoef",breaks = c(-Inf,seq(0,0.6,0.1)))
+
 ## SWE alternatives ########
 SWE.altcoeffs_all.long<-SWE.altcoeffs_all%>%
-  pivot_longer(cols = c(maxSWEdly:SWE.p))%>%
+  pivot_longer(cols = c(maxSWEdly:SDD.p))%>%
   mutate(meas = str_detect(name,"\\.p")%>%
            plyr::mapvalues(from = c(FALSE,TRUE),to = c("coef","p.val")),
          name = str_remove(name,"\\.p"))%>%
@@ -910,8 +1051,8 @@ SWE.altcoeffs_all.long<-left_join(SWE.altcoeffs_all.long,stations%>%select(ID,re
 
 
 SWE.altcoeffs_all.long$period<-SWE.altcoeffs_all.long$name%>%
-  factor(levels = c("maxSWEdly","SWE"),
-         labels = c("SWE[max]","SWE[fixed~month]"))
+  factor(levels = c("maxSWEdly","SWE","SDD"),
+         labels = c("SWE[max]","SWE[fixed~month]","SDD"))
 
 SWE.altcoeffs_all.long$regime<-factor(SWE.altcoeffs_all.long$regime,
                                       levels = c("Rainfall","Hybrid","Snowfall","Glacial")%>%rev(),
@@ -961,7 +1102,7 @@ ggplot(SWE.altcoeffs_all.long%>%
     #     legend.title = element_blank()
   )
 
-ggsave("3.figures/Sens_boxplots_SWE_alternatives.png",width = 3.5,height = 4)
+ggsave("3.figures/Sens_boxplots_SWE_alternatives.png",width = 3.5,height = 6)
 
 ## Using winter T and P
 
@@ -1181,20 +1322,20 @@ Coeffs$sigDecrease = (((Coeffs$coeff.post)<(Coeffs$coeff.pre-Coeffs$std.err.pre*
 
 (testTable<-
     Coeffs%>%group_by(var,regime)%>%
-  dplyr::summarize(nIncrease = sum(coeff.post>coeff.pre,na.rm = TRUE),
-            num = n(),
-            
-            p = binom.test(nIncrease,num,p=0.5,alternative = c("two.sided"))$p.value,
-            # p = pmin(pbinom(nIncrease,num,0.5),
-            #          pbinom(nIncrease,num,0.5,lower.tail = FALSE)),
-            
-            sigInc.frac = sum(sigIncrease,na.rm = TRUE)/sum(!is.na(sigIncrease)),
-            sigInc.pval = binom.test(round(sum(sigIncrease,na.rm = TRUE)),sum(!is.na(sigIncrease)),p=0.05,alternative = "greater")$p.value,
-            sigDec.frac = sum(sigDecrease,na.rm = TRUE)/sum(!is.na(sigDecrease)),
-            sigDec.pval = binom.test(round(sum(sigDecrease,na.rm = TRUE)),sum(!is.na(sigDecrease)),p=0.05,alternative = "greater")$p.value
-            
-            
-  ))%>%
+    dplyr::summarize(nIncrease = sum(coeff.post>coeff.pre,na.rm = TRUE),
+                     num = n(),
+                     
+                     p = binom.test(nIncrease,num,p=0.5,alternative = c("two.sided"))$p.value,
+                     # p = pmin(pbinom(nIncrease,num,0.5),
+                     #          pbinom(nIncrease,num,0.5,lower.tail = FALSE)),
+                     
+                     sigInc.frac = sum(sigIncrease,na.rm = TRUE)/sum(!is.na(sigIncrease)),
+                     sigInc.pval = binom.test(round(sum(sigIncrease,na.rm = TRUE)),sum(!is.na(sigIncrease)),p=0.05,alternative = "greater")$p.value,
+                     sigDec.frac = sum(sigDecrease,na.rm = TRUE)/sum(!is.na(sigDecrease)),
+                     sigDec.pval = binom.test(round(sum(sigDecrease,na.rm = TRUE)),sum(!is.na(sigDecrease)),p=0.05,alternative = "greater")$p.value
+                     
+                     
+    ))%>%
   print(n=100)
 
 k<-rank(testTable$p, ties.method = "first")
@@ -1239,7 +1380,7 @@ for(it in 1:32){
 
 
 
-  ## Now try each month separately################
+## Now try each month separately################
 
 stnCoeffs<-data.frame()
 stnRs<-data.frame()
@@ -1620,12 +1761,12 @@ ggplot(stnCoeffs.long%>%
   theme(
     # legend.position = c(0.15,0.93),
     legend.position = "bottom",
-        legend.background = element_rect(color = "black",fill = alpha('white',0.5)),
-        legend.margin = margin(t=-4,r=1,b=-2,l=0,unit = "pt"),
-        legend.key = element_blank(),
-        legend.title = element_blank(),
-        # panel.grid.major.y = element_blank(),
-        # panel.grid.minor.y = element_blank()
+    legend.background = element_rect(color = "black",fill = alpha('white',0.5)),
+    legend.margin = margin(t=-4,r=1,b=-2,l=0,unit = "pt"),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    # panel.grid.major.y = element_blank(),
+    # panel.grid.minor.y = element_blank()
   )
 
 ggsave(paste0("3.figures/Sens_boxplots_beta_months.png"),width = 8, height = 9)

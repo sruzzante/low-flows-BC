@@ -1,6 +1,6 @@
 # Author: Sacha Ruzzante
 # sachawruzzante@gmail.com
-# Last Update: 2024-05-10
+# Last Update: 2024-09-09
 
 # This script performs a number of tasks:
 # prepare the streamflow data and save it to an RDS file
@@ -25,6 +25,7 @@ library(reshape2)
 library(ggplot2)
 library(cowplot)
 library("bcmaps")
+library(terra)
 
 setwd(paste0(Sys.getenv("USERPROFILE"), "/OneDrive - University of Victoria/low-flows-BC/")) #Set the working directory
 
@@ -446,6 +447,40 @@ streamDataFinal<-streamDataAll[streamDataAll$ID%in%stations$ID,]
 write.csv(streamDataFinal,"2.data/2.working/Discharge/streamDataFinal.csv",row.names = FALSE)
 saveRDS(streamDataFinal,"2.data/2.working/Discharge/streamDataFinal.rds")
 
+## Glaciers 1985-2021
+watersheds<-st_read("2.data/2.working/CatchmentPolygons/watersheds_final.gpkg")
+
+
+glaciersYrly<-st_read("../DATA/1.Spatial_data/regional/BC/lulc_landuse_landcover/lulc1_glaciers_Bevington/bca_glaciers_1984-2021.gpkg")
+  # st_simplify(dTolerance = 50)%>%
+  st_make_valid()
+  
+glaciersYr<-glaciersYrly%>%filter(year==2009)
+
+glaciersYr<-st_union(glaciersYr)
+glaciersYr<-st_make_valid(glaciersYr)
+st_write(glaciersYr,"2.data/2.working/GlacierRasters/glacier2009.gpkg")
+
+watersheds_combine<-st_union(watersheds)%>%
+  st_transform(st_crs(glaciersYrly))
+
+
+
+glaciersYrly_fltr<-st_filter(glaciersYrly,watersheds_combine, .predicate = st_intersects)
+
+terra::rasterize()
+r<-terra::rast(bc, resolution = 20)
+
+for(it_yr in 1984:2021){
+  glaciersYr<-glaciersYrly%>%filter(year==it_yr)
+  terra::rasterize(glaciersYr[1:10,],r,values = 1,touches = TRUE,
+                                 filename = paste0("2.data/2.working/GlacierRasters/","glaciers",it_yr,".tif"),
+                   overwrite = TRUE)
+}
+
+plot(r)
+plot(glaciersYr[1:10,],add = TRUE)
+plot(glaciersYr_r)
 #Moyie River at Eastport
 
 streamDataAll<-read.csv("2.data/2.working/streamFlowData/streamDataFinal.csv")
